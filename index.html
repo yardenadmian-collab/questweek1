@@ -115,7 +115,7 @@ body.inspecting #c{cursor:grab} body.inspecting.dragging #c{cursor:grabbing}
 #pterm{position:fixed;top:50%;right:22px;transform:translateY(-50%);z-index:15;width:min(400px,calc(100vw - 28px));background:linear-gradient(180deg,#06210f,#020c06);border:2px solid #5dff8a;border-radius:16px;padding:18px;box-shadow:0 20px 60px rgba(0,0,0,.7);color:#c8ffd6}
 #pterm h2{margin:0 0 10px;font-size:30px;color:#5dff8a}#pt-slots{display:flex;gap:8px;justify-content:center;direction:ltr;margin-bottom:8px}#pt-slots .slot{border-color:#2f9a52;width:64px;height:64px}
 #pt-slots .slot.bad{border-color:#ff6b6b}#pt-msg{min-height:26px;text-align:center;font-size:16px;margin-bottom:8px}#pt-msg.bad{color:#ff9b8b}
-#pt-done{text-align:center}#pt-done .pt-found{font-size:30px;font-weight:800;color:#5dff8a;margin:6px 0 14px}#pt-open{font-size:20px;padding:12px 26px;background:linear-gradient(180deg,#2bbf8a,#178a62);margin:0 auto}#pt-note{color:#ffd9a8;min-height:20px}
+#pt-done{text-align:center}#pt-done .pt-found{font-size:30px;font-weight:800;color:#5dff8a;margin:6px 0 14px}#pt-open{font-size:20px;padding:12px 26px;background:linear-gradient(180deg,#2bbf8a,#178a62);margin:0 auto}#pt-note{color:#ffd9a8;min-height:20px}#pt-done .pt-dl{display:block;margin:12px auto 0;color:#bfefff;font-size:16px;text-decoration:underline}
 #cl-slots{display:flex;gap:10px;justify-content:center;margin-bottom:8px}
 .clf{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:15px;color:#e9c77a}
 .clf .slot{width:84px;height:64px;font:900 32px "Arial Black",Arial;direction:ltr;border-color:#c89b3c}
@@ -263,7 +263,7 @@ body.inspecting #c{cursor:grab} body.inspecting.dragging #c{cursor:grabbing}
   <button class="x" id="pt-close" aria-label="סגירה" style="position:absolute;top:8px;left:8px;min-width:40px;min-height:40px;padding:0;justify-content:center">✕</button>
   <h2>המצגת של ירדן</h2>
   <div id="pt-entry"><div class="slots" id="pt-slots"></div><div id="pt-msg" role="status" aria-live="assertive"></div><div class="vl-digits" id="pt-digits"></div><div class="kp-actions"><button id="pt-del">מחיקה</button><button id="pt-ok">אישור</button></div></div>
-  <div id="pt-done" hidden><p class="pt-found">המצגת נמצאה!</p><button id="pt-open">פתיחת המצגת</button><p id="pt-note"></p></div>
+  <div id="pt-done" hidden><p class="pt-found">המצגת נמצאה!</p><button id="pt-open">פתיחת המצגת</button><a id="pt-dl" class="pt-dl">הורדת המצגת (PDF)</a><p id="pt-note"></p></div>
 </div>
 <div id="clock" hidden role="dialog" aria-label="מנעול הארגז">
   <button class="x" id="cl-close" aria-label="סגירה" style="position:absolute;top:8px;left:8px;min-width:40px;min-height:40px;padding:0;justify-content:center">✕</button>
@@ -444,12 +444,12 @@ const CONFIG = {
     TOKENS: 3, TOKEN_TEXT: 'צעצועים אבודים',
     LABELS: { inspect: 'בדיקת פריט' },
   },
-  // ===== קוד המצגת: ייחשף בחידה האחרונה (מכונת הצעצועים), שהמנגנון שלה טרם הוגדר. אף חידה אחרת אינה מוסיפה ספרה =====
+  // ===== קוד המצגת (D-029, D-050): הקוד אינו כתוב במקור. הוא מופיע רק כתמונה על גב הרובוט, והוא המפתח לפענוח slides.bin =====
   CODE: {
-    FINAL: '5279',                                    // הקוד הסופי (D-029)
     LENGTH: 4,
+    LABEL: 'data:image/png;base64,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',   // התווית על גב הרובוט
   },
-  // ===== חידת הסיום: מכונת הצעצועים (D-034). הקוד על גב הרובוט הוא CODE.FINAL =====
+  // ===== חידת הסיום: מכונת הצעצועים (D-034). הקוד על גב הרובוט הוא התמונה CODE.LABEL =====
   CLAW: {
     SLOGAN: 'גם מצגות צריכות לפעמים חילוץ.',
     TERMINAL_TITLE: 'המצגת של ירדן',
@@ -471,7 +471,8 @@ const CONFIG = {
   },
   // ===== RADAR RALLY: רמז לנקודות המבט של חידה 1 (D-037) =====
   RADAR: { SECONDS: 30, BEHIND: 1.8, NO_TARGETS: 'המכונה לא מוצאת יעדים.', DONE_MSG: 'השבר הזה כבר אצלכם.' },   // ארבע מכונות מפוזרות, אחת לכל צמד, בלי כיתוב (D-044)
-  PRESENTATION_URL: '',   // חסר: המרצה תשלח (O-029). אין להשתמש בקישור מומצא. הכפתור פותח בלשונית חדשה
+  // ===== המצגת (D-050): PDF מוצפן ב־AES-GCM, המפתח נגזר מהקוד (PBKDF2). נוצר בעזרת game/tools/encrypt-slides.mjs =====
+  SLIDES: { FILE: 'slides.bin', NAME: 'מפגש-1_אחרי-הקווסט.pdf' },
   SIGN_TEXT: ['UX', '·', 'UI', '·', '3D', '·', 'AI'],
   SUBTITLE: 'עיצוב חוויות למידה בתלת־ממד בעזרת בינה מלאכותית',
 };
@@ -978,7 +979,8 @@ const CLAW={active:false,robotOut:false,solved:false,reset(){},init(){}};
   const figure=c=>inner=>{const b=new THREE.Mesh(new THREE.ConeGeometry(.04,.09,14),mat(c,.5));b.position.y=.045;inner.add(b);const hd=new THREE.Mesh(new THREE.SphereGeometry(.028,12,10),mat(0xf2c8a0,.5));hd.position.y=.11;inner.add(hd);return .14;};
   // the robot: orange; the logo on its chest faces the glass, the code is on its back
   const logoTex=canvasTex(256,256,(c,w,h)=>{c.fillStyle='#f4efe6';c.beginPath();c.roundRect(8,8,w-16,h-16,26);c.fill();drawPptLogo(c,w/2,h/2,190);});
-  const codeTex=canvasTex(320,240,(c,w,h)=>{c.fillStyle='#fffbe8';c.fillRect(0,0,w,h);c.strokeStyle='#111';c.lineWidth=10;c.strokeRect(8,8,w-16,h-16);c.fillStyle='#111';c.font='900 120px "Arial Black",Arial';c.textAlign='center';c.textBaseline='middle';c.fillText(CONFIG.CODE.FINAL,w/2,h/2+8);});
+  const codeTex=canvasTex(320,240,(c,w,h)=>{c.fillStyle='#fffbe8';c.fillRect(0,0,w,h);});
+  {const img=new Image();img.onload=()=>{codeTex.image.getContext('2d').drawImage(img,0,0,320,240);codeTex.needsUpdate=true;};img.src=CONFIG.CODE.LABEL;}
   const robot=inner=>{const o=mat(0xff8a1f,.4),dark=mat(0x3a2a20,.5);
     const body=new THREE.Mesh(new RoundedBoxGeometry(.11,.1,.075,2,.012),o);body.position.y=.07;inner.add(body);
     const hd=new THREE.Mesh(new RoundedBoxGeometry(.08,.06,.065,2,.012),o);hd.position.y=.155;inner.add(hd);
@@ -1069,18 +1071,35 @@ const CLAW={active:false,robotOut:false,solved:false,reset(){},init(){}};
   drawScreen(true);
   term.userData.interact={get label(){return CC.TERMINAL_TITLE;},action:()=>openTerm()};
   const P={entry:''};
-  function openTerm(){releaseLock();state.mode='pterm';$('pterm').hidden=false;$('prompt').hidden=true;renderTerm();$('pt-msg').textContent='';$('pt-msg').className='';AUDIO.play('tick');updateResume();}
+  function openTerm(){releaseLock();state.mode='pterm';loadSlides().catch(()=>{});$('pterm').hidden=false;$('prompt').hidden=true;renderTerm();$('pt-msg').textContent='';$('pt-msg').className='';AUDIO.play('tick');updateResume();}
   function closeTerm(){if(state.mode!=='pterm')return;$('pterm').hidden=true;state.mode='play';updateResume();canvas.focus();}
   function renderTerm(st){$('pt-entry').hidden=CLAW.solved;$('pt-done').hidden=!CLAW.solved;
     const el=$('pt-slots');el.innerHTML='';for(let i=0;i<CONFIG.CODE.LENGTH;i++){const d=document.createElement('div');d.className='slot'+(P.entry[i]?' filled':'')+(i===P.entry.length?' cur':'')+(st?' '+st:'');d.textContent=P.entry[i]||'';el.appendChild(d);}
-    $('pt-note').textContent=CONFIG.PRESENTATION_URL?'':'הקישור למצגת עוד לא הוגדר.';}
+    $('pt-note').textContent='';}
   function ptType(ch){if(state.mode!=='pterm'||CLAW.solved)return;if(P.entry.length>=CONFIG.CODE.LENGTH)return;P.entry+=ch;$('pt-msg').textContent='';renderTerm();AUDIO.play('key');}
   function ptDel(){if(state.mode!=='pterm'||CLAW.solved)return;P.entry=P.entry.slice(0,-1);renderTerm();AUDIO.play('del');}
-  function ptSubmit(){if(state.mode!=='pterm'||CLAW.solved)return;
+  // המצגת (D-050): הקוד נבדק בניסיון לפענח את slides.bin. אין השוואה לקוד שכתוב במקור
+  const SL={bytes:null,loading:null,url:null,busy:false};
+  function loadSlides(){if(SL.bytes)return Promise.resolve(SL.bytes);
+    if(!SL.loading)SL.loading=(window.EMBEDDED_SLIDES?Promise.resolve(Uint8Array.from(atob(window.EMBEDDED_SLIDES),ch=>ch.charCodeAt(0)))
+      :fetch(CONFIG.SLIDES.FILE).then(r=>{if(!r.ok)throw new Error('http '+r.status);return r.arrayBuffer();}).then(b=>new Uint8Array(b)))
+      .then(b=>SL.bytes=b).catch(e=>{SL.loading=null;throw e;});
+    return SL.loading;}
+  async function decryptSlides(code,b){const dv=new DataView(b.buffer,b.byteOffset);if(String.fromCharCode(...b.subarray(0,4))!=='QST1')throw new Error('format');
+    const iter=dv.getUint32(4),salt=b.subarray(8,24),iv=b.subarray(24,36),ct=b.subarray(36);
+    const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(code),'PBKDF2',false,['deriveKey']);
+    const key=await crypto.subtle.deriveKey({name:'PBKDF2',hash:'SHA-256',salt,iterations:iter},base,{name:'AES-GCM',length:256},false,['decrypt']);
+    try{return await crypto.subtle.decrypt({name:'AES-GCM',iv},key,ct);}catch(e){return null;}}   // null = קוד שגוי
+  async function ptSubmit(){if(state.mode!=='pterm'||CLAW.solved||SL.busy)return;
     if(P.entry.length<CONFIG.CODE.LENGTH){$('pt-msg').textContent='הקלידו את כל הספרות.';$('pt-msg').className='bad';AUDIO.play('locked');return;}
-    if(P.entry!==CONFIG.CODE.FINAL){$('pt-msg').textContent=CC.WRONG_MSG;$('pt-msg').className='bad';AUDIO.play('wrong');renderTerm('bad');return;}
+    SL.busy=true;$('pt-msg').textContent='בודקים…';$('pt-msg').className='';const entry=P.entry;let pdf;
+    try{pdf=await decryptSlides(entry,await loadSlides());}
+    catch(e){SL.busy=false;$('pt-msg').textContent='המצגת לא נטענה. בדקו את החיבור לרשת ונסו שוב.';$('pt-msg').className='bad';AUDIO.play('locked');return;}
+    SL.busy=false;if(state.mode!=='pterm'||CLAW.solved)return;
+    if(!pdf){$('pt-msg').textContent=CC.WRONG_MSG;$('pt-msg').className='bad';AUDIO.play('wrong');renderTerm('bad');return;}
+    $('pt-msg').textContent='';SL.url=URL.createObjectURL(new Blob([pdf],{type:'application/pdf'}));const dl=$('pt-dl');dl.href=SL.url;dl.download=CONFIG.SLIDES.NAME;
     CLAW.solved=true;CLAW.solvedAt=clock;AUDIO.play('fanfare');AUDIO.win=true;celebrate=3.2;drawScreen(false);renderTerm();setObjective();$('pt-open').focus();}
-  function openPresentation(){const url=CONFIG.PRESENTATION_URL;if(!url){toast('הקישור למצגת עוד לא הוגדר.');return;}window.open(url,'_blank','noopener');}
+  function openPresentation(){if(!SL.url){toast('המצגת עוד נעולה.');return;}const a=document.createElement('a');a.href=SL.url;a.target='_blank';a.rel='noopener';document.body.appendChild(a);a.click();a.remove();}
   /* ---------- per-frame ---------- */
   updaters.push((dt,t)=>{
     if(mode&&CLAW.active&&!C.busy){let dx=0,dz=0;
@@ -2600,6 +2619,9 @@ addEventListener('keydown',e=>{
     return;
   }
   if(state.mode==='cardpop'){if(k==='Enter'||k==='Space'){closeCardPop();e.preventDefault();}return;}
+  // BUG-013: אחרי קליק על "מחיקה" או "איפוס" הפוקוס נשאר על הכפתור, ו־Enter הפעיל אותו במקום לשלוח.
+  // הקלדה ממקלדת מחזירה את הפוקוס מהכפתור, כך ש־Enter שולח. Tab ואחריו Enter על כפתור עדיין מפעיל אותו
+  if((state.mode==='pterm'||state.mode==='keypad')&&/^(Key[A-Z]|Digit[0-9]|Numpad[0-9]|Backspace|Delete)$/.test(k)&&document.activeElement&&document.activeElement.tagName==='BUTTON')document.activeElement.blur();
   if(state.mode==='pterm'){
     if(/^(Digit|Numpad)[0-9]$/.test(k)){CLAW.ptType(k.slice(-1));e.preventDefault();}
     else if(k==='Backspace'||k==='Delete'){CLAW.ptDel();e.preventDefault();}
