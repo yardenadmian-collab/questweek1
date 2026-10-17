@@ -6,7 +6,8 @@
 <title>ארקייד הדברים האבודים · חדר 1</title>
 <!-- תוצר: game/arcade-prototype/index.html | גרסה: 0.13 (D-065: דלת חידה 1 עולה כתריס, תאורה במסדרון, יציאה אחורית מחדר המטלות לחדר 1; D-051: מצב מנחה נעול, שמירת התקדמות) | סטטוס: בבדיקה | בעלים: development | בודק: technical-qa
      מקור: בריף המרצה בצ'אט, 2026-10-13 ("ארקייד הדברים האבודים", חידה 1: שלט הכניסה התפרק). ראו README.md -->
-<link href="lib/fonts/fonts.css" rel="stylesheet">   <!-- D-078: local copies, no outside sites -->
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;800&family=Karantina:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#06050b; --panel:rgba(14,11,24,.9); --panel-solid:#120e1f; --line:#3b3156; --fg:#f6f1ff; --muted:#bdb3d6;
@@ -167,8 +168,8 @@ body.inspecting #c{cursor:grab} body.inspecting.dragging #c{cursor:grabbing}
 </style>
 <script type="importmap">
 { "imports": {
-  "three": "./lib/three/build/three.module.js",
-  "three/addons/": "./lib/three/examples/jsm/"
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
 } }
 </script>
 </head>
