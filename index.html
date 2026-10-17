@@ -470,7 +470,7 @@ const CONFIG = {
     TICK_SECONDS: 10,   // תקתוק בכל שנייה בשניות האחרונות
   },
   // ===== RADAR RALLY: רמז לנקודות המבט של חידה 1 (D-037) =====
-  RADAR: { SECONDS: 30, BEHIND: 1.8, NO_TARGETS: 'המכונה לא מוצאת יעדים.', DONE_MSG: 'השבר הזה כבר אצלכם.' },   // ארבע מכונות מפוזרות, אחת לכל צמד, בלי כיתוב (D-044)
+  RADAR: { SECONDS: 30, SPOTS: { UX: [1.7, 7.4, Math.PI], UI: [8.38, 2.45, -Math.PI / 2], '3D': [-8.38, -4.0, Math.PI / 2], AI: [4.375, -9.38, 0] }, NO_TARGETS: 'המכונה לא מוצאת יעדים.', DONE_MSG: 'השבר הזה כבר אצלכם.' },   // ארבע מכונות צמודות לקירות, כל אחת בקיר אחר, אחת לכל צמד, בלי כיתוב (D-054)
   // ===== המצגת (D-050): PDF מוצפן ב־AES-GCM, המפתח נגזר מהקוד (PBKDF2). נוצר בעזרת game/tools/encrypt-slides.mjs =====
   SLIDES: { FILE: 'slides.bin', NAME: 'מפגש-1_אחרי-הקווסט.pdf' },
   SIGN_TEXT: ['UX', '·', 'UI', '·', '3D', '·', 'AI'],
@@ -1706,7 +1706,7 @@ CLAW.init();
    collected the machine shows a tick, like a score board. */
 const RADAR=(()=>{
   const RC=CONFIG.RADAR;
-  // scattered: each machine stands RC.BEHIND m behind its pair's viewpoint (away from the fragments) and faces it
+  // against the walls, one per wall (D-054): after a machine lights its footprints, the players still have to find them
   const fpTex=canvasTex(128,256,(g,w,h)=>{g.clearRect(0,0,w,h);g.fillStyle='#fff';
     const foot=(cx,cy,flip)=>{g.save();g.translate(cx,cy);g.scale(flip?-1:1,1);g.beginPath();g.ellipse(0,-30,18,30,.12,0,6.283);g.fill();g.beginPath();g.ellipse(2,32,14,20,0,0,6.283);g.fill();
       for(let i=0;i<5;i++){g.beginPath();g.arc(-13+i*7,-70+Math.abs(i-1)*3,4.4-i*.45,0,6.283);g.fill();}g.restore();};
@@ -1715,8 +1715,8 @@ const RADAR=(()=>{
   const machines=[];const mine=new Set();
   CONFIG.DOOR_ORDER.forEach((pair,i)=>{
     const G=groups.find(g=>g.pair===pair);if(!G)return;const P=CONFIG.PAIRS[pair],col=P.color;
-    const d=V3(G.C.x-G.V.x,0,G.C.z-G.V.z).normalize(),mx=G.V.x-d.x*RC.BEHIND,mz=G.V.z-d.z*RC.BEHIND;
-    const cab=makeCabinet(mx,mz,Math.atan2(G.V.x-mx,G.V.z-mz),{acc:col,title:' ',mode:'title'});mine.add(cab);
+    const [mx,mz,mr]=RC.SPOTS[pair];
+    const cab=makeCabinet(mx,mz,mr,{acc:col,title:' ',mode:'title'});mine.add(cab);
     // footprints on the floor at this pair's viewpoint
     const mat=new THREE.MeshBasicMaterial({map:fpTex,color:new THREE.Color(col).multiplyScalar(.85),transparent:true,opacity:0,depthWrite:false,toneMapped:false});
     const fp=new THREE.Group();fp.position.set(G.V.x,.03,G.V.z);fp.rotation.y=Math.atan2(-(G.C.x-G.V.x),-(G.C.z-G.V.z));scene.add(fp);
