@@ -6,8 +6,7 @@
 <title>ארקייד הדברים האבודים · חדר 1</title>
 <!-- תוצר: game/arcade-prototype/index.html | גרסה: 0.13 (D-065: דלת חידה 1 עולה כתריס, תאורה במסדרון, יציאה אחורית מחדר המטלות לחדר 1; D-051: מצב מנחה נעול, שמירת התקדמות) | סטטוס: בבדיקה | בעלים: development | בודק: technical-qa
      מקור: בריף המרצה בצ'אט, 2026-10-13 ("ארקייד הדברים האבודים", חידה 1: שלט הכניסה התפרק). ראו README.md -->
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;800&family=Karantina:wght@400;700&display=swap" rel="stylesheet">
+<link href="lib/fonts/fonts.css" rel="stylesheet">   <!-- D-078: local copies, no outside sites -->
 <style>
 :root{
   --bg:#06050b; --panel:rgba(14,11,24,.9); --panel-solid:#120e1f; --line:#3b3156; --fg:#f6f1ff; --muted:#bdb3d6;
@@ -56,7 +55,7 @@ h1.neon{margin:0 0 14px;font-size:clamp(46px,8vw,80px);line-height:.95;font-weig
 .tray-label{font-size:15px;color:var(--muted);writing-mode:horizontal-tb}
 #tray-items{display:flex;gap:8px;direction:ltr}
 #tray-items .empty{color:#7c7299;font-size:15px;padding:0 6px;direction:rtl}
-.tray-item{min-height:54px;min-width:74px;justify-content:center;font-size:22px;background:linear-gradient(180deg,#2c2440,#191427);border-color:#5b4c86}
+.tray-item{position:relative;min-height:54px;min-width:74px;justify-content:center;font-size:22px;background:linear-gradient(180deg,#2c2440,#191427);border-color:#5b4c86}
 .tray-item .pair{color:#fff3e6;text-shadow:0 0 8px rgba(255,226,196,.8)}
 .tray-item .k{position:absolute;margin-top:-40px;font-size:11px;color:var(--muted)}
 .tray-item.pop{animation:pop .5s ease-out}
@@ -168,8 +167,8 @@ body.inspecting #c{cursor:grab} body.inspecting.dragging #c{cursor:grabbing}
 </style>
 <script type="importmap">
 { "imports": {
-  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  "three": "./lib/three/build/three.module.js",
+  "three/addons/": "./lib/three/examples/jsm/"
 } }
 </script>
 </head>
