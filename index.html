@@ -434,9 +434,9 @@ const CONFIG = {
       'הקיפו את הכד ובדקו מה מופיע מאחוריו.',
       "חפשו במודל את המדריך ‘מרעיון לאובייקט ב־Unity’.",
       'מצאו במדריך איזה כלי מתאים לכל אחד משלושת התיאורים שעל הכד.',
-      'בחרו בכל טבעת את האות הראשונה בשם הכלי המתאים, ואז לחצו על כפתור הבדיקה. הצירוף הנכון פותח את דלת חדר המטלות.',   // D-069: ממתין לאישור המרצה
+      'בחרו בכל טבעת את האות הראשונה בשם הכלי המתאים, ואז לחצו על כפתור הבדיקה. הצירוף הנכון פותח את דלת חדר המטלות.',   // D-072: אושר בידי המרצה
     ],
-    bayNext: ['דלת חדר המטלות פתוחה. עקבו אחרי התפר הוורוד שעל הרצפה.'],   // D-069: ממתין לאישור המרצה
+    bayNext: ['דלת חדר המטלות פתוחה. עקבו אחרי התפר הוורוד שעל הרצפה.'],   // D-072: אושר בידי המרצה
     // חדר המטלות: הרמזים של העמדה הפעילה (האחרונה שהשחקנים התקרבו אליה או הרימו ממנה פריט)
     assign0: ['בחדר שלוש עמדות, אחת לכל מטלה. אפשר להתחיל בכל אחת מהן.'],
     assign1: ['חפשו את דוגמת הצבעים בחומרי מטלה 1.', 'בדקו את קודי הצבע ואת התפקיד של כל צבע בדוגמה.'],
@@ -444,8 +444,8 @@ const CONFIG = {
     assign3: ["בסעיף ‘מה מגישים’ במטלה 3 מצוין אילו תיקיות מצרפים לפרויקט Unity.", 'בחרו שלוש תיקיות. הסדר שלהן בארגז אינו חשוב. סגרו את המכסה כדי לבדוק.'],
     chest: ['כל עמדה שפתרתם הציגה מספר ליד מספר המטלה.', 'הזינו את המספר של כל מטלה בשדה שלה.'],
     tokens: ['האסימונים שייכים למכונה בחדר הראשון.'],
-    claw: ['הכניסו אסימון לחריץ שבמכונה. המכונה תעשה את השאר.', 'הצעצוע שהמכונה הוציאה מחכה בתא האיסוף. קחו אותו וסובבו אותו.'],   // D-070: ממתין לאישור המרצה
-    clawPlay: ['המכונה פועלת. חכו שהזרוע תסיים.'],   // D-070: ממתין לאישור המרצה
+    claw: ['הכניסו אסימון לחריץ שבמכונה. המכונה תעשה את השאר.', 'הצעצוע שהמכונה הוציאה מחכה בתא האיסוף. קחו אותו וסובבו אותו.'],   // D-072: אושר בידי המרצה
+    clawPlay: ['המכונה פועלת. חכו שהזרוע תסיים.'],   // D-072: אושר בידי המרצה
     robot: ['קחו את הצעצוע מתא האיסוף וסובבו אותו. בדקו את הגב שלו.', 'הזינו את הקוד שמצאתם במסוף שליד המכונה.'],
     done: [],   // הסיום הוא הודעת הצלחה קבועה וכפתור "פתיחת המצגת", לא רמז
   },
@@ -1722,6 +1722,7 @@ function setObjective(){
   const n=pairCount();let html;
   if(state.inRoom2)html='עברתם לחלל הבא.';
   else if(CLAW.solved)html='<b>המצגת נמצאה!</b> אפשר לפתוח אותה במסוף.';
+  else if(CLAW.active)html='<b>מכונת הצעצועים פועלת.</b>';   // D-072
   else if(CLAW.robotOut)html='<b>המסוף "המצגת של ירדן"</b> מחכה לקוד.';   // D-070: the machine catches the robot by itself; no claw instructions
   else if(state.tokens>0)html=`<b>יש לכם אסימונים (${state.tokens}).</b> מכונת הצעצועים מחכה.`;
   else if(typeof AZ!=='undefined'&&AZ.A.chest.taken)html='<b>המסוף "המצגת של ירדן"</b> מחכה לקוד.';
@@ -2126,11 +2127,14 @@ const MZ=(()=>{
   const vase=new THREE.Group();vase.position.set(VX,PT,VZ);scene.add(vase);
   const vaseGrey=new THREE.MeshStandardMaterial({color:0x9b9ba0,roughness:.5,side:THREE.DoubleSide});
   const vaseGreen=new THREE.MeshStandardMaterial({map:yarnTex,roughness:.95,side:THREE.DoubleSide,emissive:0x2c6e0c,emissiveIntensity:0});
-  const SPREAD={value:1.95};   // the vase is green from the start (D-036); the shader stays for a grey start if ever needed
+  const SPREAD={value:1.95};
+  const PINKU={value:0};   // D-075: 0 = green yarn, 1 = pink yarn (the vase turns pink when solved)
+  const pinkify=m=>{const prev=m.onBeforeCompile;m.onBeforeCompile=sh=>{if(prev)prev(sh);sh.uniforms.uPink=PINKU;sh.fragmentShader='uniform float uPink;\n'+sh.fragmentShader.replace('#include <map_fragment>','#include <map_fragment>\n  diffuseColor.rgb=mix(diffuseColor.rgb,vec3(diffuseColor.g,diffuseColor.r*.6,diffuseColor.g*.68),uPink);');};m.needsUpdate=true;};   // the vase is green from the start (D-036); the shader stays for a grey start if ever needed
   const vaseMat=new THREE.MeshStandardMaterial({map:yarnTex,roughness:.9,side:THREE.DoubleSide,emissive:0x2c6e0c,emissiveIntensity:0});
   vaseMat.onBeforeCompile=sh=>{sh.uniforms.uSpread=SPREAD;
     sh.vertexShader='varying float vYl;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n  vYl=position.y;');
     sh.fragmentShader='uniform float uSpread;\nvarying float vYl;\n'+sh.fragmentShader.replace('#include <map_fragment>','#include <map_fragment>\n  diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.33,.33,.35),smoothstep(uSpread-.12,uSpread,vYl));');};
+  pinkify(vaseMat);pinkify(vaseGreen);
   const vaseMesh=new THREE.Mesh(new THREE.LatheGeometry([...PROF,...INNER].map(([r,h])=>new THREE.Vector2(r,h)),64),vaseMat);vase.add(vaseMesh);
   const lidPivot=new THREE.Group();lidPivot.position.set(0,1.74,-.27);vase.add(lidPivot);
   const lid=new THREE.Group();lid.position.set(0,0,.27);lidPivot.add(lid);
@@ -2222,12 +2226,13 @@ const MZ=(()=>{
   }
   function solve(){
     S.solved=true;S.busy=true;AUDIO.play('right');setObjective();$('toast').className='';
-    winMats.forEach(m=>m.color.set(GREEN).multiplyScalar(1.5));capMat.emissive.set(GREEN);capMat.emissiveIntensity=.6;
+    winMats.forEach(m=>m.color.set('#ff5fae').multiplyScalar(1.5));capMat.emissive.set('#ff5fae');capMat.emissiveIntensity=.6;   /* D-075: pink, like the vase and the door */
     tween(reduceMotion?.3:1.9,p=>{const sp=lerp(-.15,1.95,easeInOut(p));vaseMat.emissiveIntensity=Math.sin(p*PI)*.9;
-      for(const r of rings)if(!r.green&&sp>r.h-.05){r.green=true;r.mat.color.set('#a6f56a');r.mat.emissive.set('#2c6e0c');r.mat.emissiveIntensity=.35;}
+      for(const r of rings)if(!r.green&&sp>r.h-.05){r.green=true;r.mat.color.set('#ffa3cf');r.mat.emissive.set('#7a1f4c');r.mat.emissiveIntensity=.35;}
       renderer.shadowMap.needsUpdate=true;},()=>{
       // D-069: no key any more. The vase glows, the pink stitch runs along the floor to the assignments-room door, and the door opens
       AUDIO.play('vase');S.keyTaken=true;S.keyUsed=true;showPink();
+      tween(reduceMotion?.3:1.4,p=>{PINKU.value=easeInOut(p);vaseMat.emissive.set('#7a1f4c');vaseMat.emissiveIntensity=Math.sin(p*PI)*.6;});   // D-075
       later(reduceMotion?.3:1.6,()=>{AZ.openDoor();S.busy=false;S.flow=true;setObjective();toast('דלת חדר המטלות נפתחה.','good');});});
   }
   function takeKey(){
@@ -2243,7 +2248,7 @@ const MZ=(()=>{
     const azOpen=typeof AZ!=='undefined'&&AZ.A.doorOpen;
     if(azOpen)return`<b>הדלת פתוחה.</b> ${CONFIG.ASSIGN.ROOM_NAME} מחכה.`;
     if(S.solved)return'<b>הצירוף נכון.</b> הדלת נפתחת.';
-    return'<b>הכד נעול</b> בשלוש טבעות של אותיות.';
+    return'<b>אותיות פותחות את הדלת,</b> אבל איפה תאספו אותן?';   /* D-074: נוסח המרצה */
   }
   function update(dt,t){
     if(key.outer.visible&&!S.keyTaken&&key.outer.parent===scene)key.outer.rotation.y=t*.9;
@@ -2255,7 +2260,7 @@ const MZ=(()=>{
     Object.assign(S,{idx:startIdx(),solved:false,keyTaken:false,keyUsed:false,busy:false,flow:false,wrong:0,checks:0});
     rings.forEach((r,i)=>{r.grp.rotation.y=-S.idx[i]*STEP;r.green=false;r.mat.color.set(0xffffff);r.mat.emissive.set(0);r.mat.emissiveIntensity=0;});
     winMats.forEach(m=>m.color.set(WIN_IDLE).multiplyScalar(.9));capMat.emissive.set(WIN_IDLE);capMat.emissiveIntensity=.25;cap.position.y=CAP_Y;
-    SPREAD.value=1.95;vaseMat.emissiveIntensity=0;lidPivot.rotation.x=0;
+    SPREAD.value=1.95;vaseMat.emissiveIntensity=0;vaseMat.emissive.set(0x2c6e0c);PINKU.value=0;lidPivot.rotation.x=0;
     homeKey();keyLight.intensity=0;pink.forEach(m=>{m.visible=false;m.count=0;});
     for(const gm of guides)gm.material.color.set(GREEN).multiplyScalar(1.05);renderer.shadowMap.needsUpdate=true;
   }
@@ -2267,9 +2272,9 @@ const MZ=(()=>{
     rings.forEach((r,i)=>{r.grp.rotation.y=-S.idx[i]*STEP;});
     if(!m.solved)return;
     S.solved=true;S.flow=true;S.busy=false;S.keyTaken=!!m.keyTaken;S.keyUsed=!!m.keyUsed;
-    winMats.forEach(w=>w.color.set(GREEN).multiplyScalar(1.5));capMat.emissive.set(GREEN);capMat.emissiveIntensity=.6;
-    for(const r of rings){r.green=true;r.mat.color.set('#a6f56a');r.mat.emissive.set('#2c6e0c');r.mat.emissiveIntensity=.35;}
-    vaseMat.emissiveIntensity=0;S.keyTaken=S.keyUsed=true;   // D-069: solved = the door is open, no lid and no key
+    winMats.forEach(w=>w.color.set('#ff5fae').multiplyScalar(1.5));capMat.emissive.set('#ff5fae');capMat.emissiveIntensity=.6;
+    for(const r of rings){r.green=true;r.mat.color.set('#ffa3cf');r.mat.emissive.set('#7a1f4c');r.mat.emissiveIntensity=.35;}
+    vaseMat.emissiveIntensity=0;S.keyTaken=S.keyUsed=true;PINKU.value=1;   // D-069: solved = the door is open, no lid and no key
     homeKey();
     if(false){const k=key.outer;k.visible=true;k.position.copy(KEY_HOME).add(V3(KEY_FRONT.x,KEY_FRONT.y-KEY_Y0,KEY_FRONT.z));keyLight.intensity=3.2;keyLight.position.set(k.position.x,k.position.y+.6,k.position.z+.3);}
     else{keyLight.intensity=0;pink.forEach(p=>{p.visible=true;p.count=p.userData.full;});}
@@ -2337,17 +2342,26 @@ const AZ=(()=>{
    const doorGreen=new THREE.MeshStandardMaterial({map:canvasTex(256,256,(g,w,h)=>{g.fillStyle='#3a2a1e';g.fillRect(0,0,w,h);const r=mulberry32(77);for(let y=0;y<h;y+=4){g.fillStyle=`rgba(0,0,0,${.05+r()*.12})`;g.fillRect(0,y,w,2);}},{repeat:[1,2]}),roughness:.8});
    const slab=box(.1,2.4,1.8,doorGreen,0,1.2,.9,pivot);   // green like the vase: the key from the vase opens itbox(.06,.3,.05,brass,-.06,1.1,1.6,pivot);box(.06,.3,.05,brass,.06,1.1,1.6,pivot);
    const dp=textPlate(AC.ROOM_NAME,{w:512,h:128,fs:52});for(const s of [-1,1]){const p=plane(dp,.9,.22);p.position.set(s*.056,2.05,.9);p.rotation.y=s*PI/2;pivot.add(p);}
-   {const st=canvasTex(256,256,(g)=>{g.fillStyle='#1a1410';g.fillRect(0,0,256,256);g.strokeStyle='#c89b3c';g.lineWidth=10;g.strokeRect(8,8,240,240);drawKeySymbol(g,128,128,86,CONFIG.MATERIALS.KEY_SYMBOL_COLOR);});
-    const symMats=[];for(const s of [-1,1]){const mat=new THREE.MeshStandardMaterial({map:st,emissive:0xffffff,emissiveMap:st,emissiveIntensity:.55,roughness:.5});if(s>0)symMats.push(mat);const e=new THREE.Mesh(new THREE.PlaneGeometry(.34,.34),mat);e.position.set(s*.056,1.62,.9);e.rotation.y=s*PI/2;pivot.add(e);}
-    // the large glowing sign above the door, on the bay side
-    const bigMat=new THREE.MeshBasicMaterial({map:st,toneMapped:false});{const b=new THREE.Mesh(new THREE.PlaneGeometry(.6,.6),bigMat);b.position.set(-6.98,2.8,-19.5);b.rotation.y=PI/2;scene.add(b);markNoRay(b);}
-    updaters.push((dt,t)=>{let taken=false;try{taken=MZ.S.keyTaken;}catch(e){}const open=A.doorOpen;
-      const k=open?.6:taken?1.5+.9*Math.sin(t*5):1.1+.35*Math.sin(t*1.8);bigMat.color.setScalar(k);for(const m of symMats)m.emissiveIntensity=open?.55:k*.7;});
-    // the lock plate (bay side): the same symbol above a keyhole
-    const lp=new THREE.Group();lp.position.set(.058,1.08,1.42);lp.rotation.y=PI/2;pivot.add(lp);
-    box(.14,.24,.012,brass,0,0,0,lp);const ls=new THREE.Mesh(new THREE.PlaneGeometry(.1,.1),new THREE.MeshStandardMaterial({map:st,emissive:0xffffff,emissiveMap:st,emissiveIntensity:.55}));ls.position.set(0,.05,.008);lp.add(ls);
-    box(.022,.05,.006,new THREE.MeshBasicMaterial({color:0x050505}),0,-.06,.008,lp);
-    const lk=new THREE.Group();lk.position.set(0,-.06,.012);lp.add(lk);box(.014,.012,.09,brass,0,0,.045,lk);const bw=new THREE.Mesh(new THREE.TorusGeometry(.03,.008,8,20),brass);bw.position.z=.1;bw.rotation.y=PI/2;lk.add(bw);lk.visible=false;DOORA.lockKey=lk;}
+   /* D-074: no symbol on the door. A letter keypad with a three-letter display hints that letters open it; the vase
+      combination fills the display and opens the door. The keys are not pressed one by one (the rings on the vase are the input) */
+   {const LETTERS='ABCDEFGHIJKLMNOPRSTU';
+    const kt=canvasTex(360,480,()=>{});
+    const DOOR_PINK=new THREE.Color('#ff8fc4').multiplyScalar(1.6),DOOR_PLAIN=new THREE.Color(1,1,1),DOOR_GLOW=new THREE.Color('#8a2a5c'),DOOR_DARK=new THREE.Color(0,0,0);
+    function drawKP(code){const g=kt.userData.ctx,W=360,H=480;g.fillStyle='#141210';g.fillRect(0,0,W,H);g.strokeStyle='#c89b3c';g.lineWidth=8;g.strokeRect(6,6,W-12,H-12);
+      g.fillStyle='#050806';g.fillRect(34,30,W-68,92);g.textAlign='center';g.textBaseline='middle';g.direction='ltr';
+      for(let i=0;i<3;i++){const x=88+i*92;if(code){g.fillStyle='#ff7ab8';g.font='900 70px "Courier New",monospace';g.fillText(code[i],x,80);}else{g.fillStyle='#9bf25a';g.fillRect(x-26,100,52,8);}}
+      g.font='800 38px Arial,sans-serif';for(let i=0;i<LETTERS.length;i++){const c=i%5,r=Math.floor(i/5),x=48+c*66,y=168+r*72;
+        g.fillStyle=code?'#3a1a2a':'#26351f';g.fillRect(x-26,y-26,52,52);g.strokeStyle=code?'#ff7ab8':'#9bf25a';g.lineWidth=3;g.strokeRect(x-26,y-26,52,52);g.fillStyle='#d8ffc0';g.fillText(LETTERS[i],x,y+2);}
+      kt.needsUpdate=true;}
+    drawKP(null);
+    const kpMat=new THREE.MeshStandardMaterial({map:kt,emissive:0xffffff,emissiveMap:kt,emissiveIntensity:.7,roughness:.5});
+    const kp=new THREE.Mesh(new THREE.PlaneGeometry(.36,.48),kpMat);kp.position.set(.07,1.38,.9);kp.rotation.y=PI/2;pivot.add(kp);
+    box(.016,.52,.4,brass,.058,1.38,.9,pivot);
+    kp.userData.interact={label:'לוח אותיות',action:()=>{if(A.doorOpen){toast('הדלת פתוחה.');return;}toast('חסרות אותיות.');AUDIO.play('locked');}};
+    let shown=null;updaters.push((dt,t)=>{let solved=false;try{solved=MZ.S.solved;}catch(e){}const want=solved?CONFIG.MATERIALS.RINGS.SOLUTION:null;if(want!==shown){shown=want;drawKP(want);}
+      kpMat.emissiveIntensity=A.doorOpen||solved?.6:.75+.3*Math.sin(t*1.8);
+      doorGreen.color.lerp(solved?DOOR_PINK:DOOR_PLAIN,Math.min(1,dt*2));doorGreen.emissive.lerp(solved?DOOR_GLOW:DOOR_DARK,Math.min(1,dt*2));});   // D-075: the door turns pink with the vase
+    const lk=new THREE.Group();lk.visible=false;pivot.add(lk);DOORA.lockKey=lk;}   // kept for reset/restore, which still touch it
    DOORA.lockIA={label:'הדלת נעולה',action:()=>{toast('הדלת נעולה.');AUDIO.play('locked');}};   // D-069: the vase opens it
    pivot.userData.interact=DOORA.lockIA;
    DOORA.pivot=pivot;DOORA.slab=slab;DOORA.collider=addCollider(-7.15,-19.5,.3,1.9,'az-door');DOORA.open=addCollider(-8.05,-20.4,1.8,.2,'az-door-open');DOORA.open.active=false;
@@ -2391,8 +2405,8 @@ const AZ=(()=>{
   function weightPanel(n,w=.46){const tex=canvasTex(512,220,()=>{});const m=new THREE.Mesh(new THREE.PlaneGeometry(w,w*220/512),new THREE.MeshStandardMaterial({color:0,emissive:0xffffff,emissiveMap:tex,emissiveIntensity:1}));markNoRay(m);
     box(w+.04,w*220/512+.04,.02,brass,0,0,-.012,m);
     function draw(val){const g=tex.userData.ctx;g.fillStyle='#0b0907';g.fillRect(0,0,512,220);g.strokeStyle=val?'#3dff7a':'#c89b3c';g.lineWidth=6;g.strokeRect(6,6,500,208);
-      g.direction='rtl';g.textAlign='center';g.textBaseline='middle';g.fillStyle='#e9c77a';g.font='700 58px "Karantina","Heebo",Arial';g.fillText(`מטלה 0${n}`,362,112);
-      g.direction='ltr';g.font='900 112px "Courier New",monospace';g.fillStyle=val?'#7dff9e':'#4a4030';g.fillText(val?String(val):'--',140,118);tex.needsUpdate=true;}
+      g.textAlign='center';g.textBaseline='middle';   /* D-073: the number only; "מטלה 0N" is written once, on the station object */
+      g.direction='ltr';g.font='900 140px "Courier New",monospace';g.fillStyle=val?'#7dff9e':'#4a4030';g.fillText(val?String(val):'--',256,118);tex.needsUpdate=true;}
     draw(null);return{mesh:m,show:()=>draw(AC.CARDS[n-1].weight),reset:()=>draw(null)};}
 
   /* ======================= station 01 — the colour spec of the machine ======================= */
@@ -2411,7 +2425,7 @@ const AZ=(()=>{
       g.fillStyle='rgba(0,0,0,.55)';g.fillRect(12,140,232,44);
       const opt=(y,sel)=>{if(sel){g.fillStyle=c.selection;g.fillRect(16,y,224,16);g.fillStyle='#fff';g.beginPath();g.moveTo(222,y+3);g.lineTo(232,y+8);g.lineTo(222,y+13);g.fill();}g.fillStyle='#fff';g.fillRect(30,y+6,sel?150:120,4);};opt(146,true);opt(165,false);
       g.fillStyle='rgba(0,0,0,.25)';for(let y=0;y<h;y+=3)g.fillRect(0,y,w,1);scr.needsUpdate=true;
-      const m=mq.userData.ctx;m.fillStyle='#0d0d10';m.fillRect(0,0,512,140);m.font='italic 900 64px "Arial Black",Impact,Arial';m.textAlign='center';m.textBaseline='middle';m.fillStyle=c.brand;m.fillText('FIREWATCH',256,62);m.font='600 22px "Karantina","Heebo",Arial';m.direction='rtl';m.fillStyle='#d9d4c4';m.fillText('דוגמה מהמצגת',256,114);m.direction='ltr';mq.needsUpdate=true;}
+      const m=mq.userData.ctx;m.fillStyle='#0d0d10';m.fillRect(0,0,512,140);m.font='800 92px "Karantina","Heebo",Arial';m.textAlign='center';m.textBaseline='middle';m.direction='rtl';m.fillStyle=c.brand;m.fillText('מטלה 01',256,74);m.direction='ltr';   /* D-073: the only label of the station, in the brand colour */mq.needsUpdate=true;}
     // the three role sockets sit in the machine's lower front (label + symbol, not colour only); the weight display tops the machine
     cab.group.traverse(o=>{if(o.userData.slot)o.visible=false;});
     // D-068: the sockets lie on the control deck, facing up toward the player (the joystick and buttons are removed)
@@ -2423,7 +2437,7 @@ const AZ=(()=>{
       const frameM=new THREE.MeshStandardMaterial({color:0xc89b3c,roughness:.3,metalness:.9,emissive:0xffcf3a,emissiveIntensity:0});
       box(.22,.3,.03,blackPl,0,0,0,sg);for(const [sx,sy,px,py] of [[.22,.02,0,.15],[.22,.02,0,-.15],[.02,.3,-.11,0],[.02,.3,.11,0]])box(sx,sy,.05,frameM,px,py,.01,sg);
       const lab=plane(textPlate(AC.ROLE_NAMES[role],{w:256,h:80,fs:40}),.2,.06);lab.position.set(0,-.2,.0);sg.add(lab);
-      const im=new THREE.MeshBasicMaterial({map:icon(role),transparent:true,color:new THREE.Color(.25,.25,.25),toneMapped:false});const ic=new THREE.Mesh(new THREE.PlaneGeometry(.08,.08),im);ic.position.set(0,.2,.02);sg.add(ic);
+      const im=new THREE.MeshBasicMaterial({map:icon(role),transparent:true,color:new THREE.Color(.25,.25,.25),toneMapped:false});const ic=new THREE.Mesh(new THREE.PlaneGeometry(.08,.08),im);ic.position.set(0,.2,.02);sg.add(ic);ic.visible=false;   /* D-073: no role icons */
       const led=new THREE.Mesh(new THREE.SphereGeometry(.012,8,6),neonMat('#552222',1));led.position.set(.08,.2,.02);sg.add(led);
       const anchor=new THREE.Object3D();anchor.position.set(0,0,.03);sg.add(anchor);
       SOCK[role]={sg,im,led,anchor,frameM};
@@ -2456,7 +2470,7 @@ const AZ=(()=>{
       later(.4,()=>{setCabState(cab,'on');cab.smat.emissiveMap=scr;cab.smat.emissiveIntensity=1.3;cab.mqMat.emissiveIntensity=1.3;AUDIO.play('right');wp.show();setObjective();});}
     function reset(){for(const r of ROLES){A.s1.slots[r]=null;SOCK[r].im.color.set(.25,.25,.25);SOCK[r].led.material.color.set('#552222');}A.s1.solved=false;setCabState(cab,'off');cab.smat.emissiveMap=scr;cab.smat.emissiveIntensity=1.1;cab.mqMat.emissiveIntensity=1.0;wp.reset();carts.forEach((h,i)=>{const id='cart'+i;placeHome(id);OBJ[id].outer.userData.interact={label:AC.LABELS.inspect,action:()=>pickup(id)};});draw();}
     draw();
-    {const g=new THREE.Group();g.position.set(-16.6,0,-14.2);g.rotation.y=PI/2+.5;scene.add(g);box(.05,1.2,.05,brass,0,.6,0,g);const p=numPlate(1,AC.S1_SIGN,.92,.2);p.position.set(0,1.38,.03);g.add(p);box(.96,.24,.03,woodDark,0,1.38,0,g);}
+    {const g=new THREE.Group();g.position.set(-16.6,0,-14.2);g.rotation.y=PI/2+.5;scene.add(g);box(.05,1.2,.05,brass,0,.6,0,g);g.visible=false;   /* D-073: "מטלה 01" is written on the machine only */}
     // D-051: only correct cartridges are kept in a socket, as in socket()
     function restore(slots){
       for(const role of ROLES){const id=slots&&slots[role];if(!id||!OBJ[id]||OBJ[id].hex!==AC.COLORS[role])continue;
