@@ -115,6 +115,8 @@ body.inspecting #c{cursor:grab} body.inspecting.dragging #c{cursor:grabbing}
 #pterm{position:fixed;top:50%;right:22px;transform:translateY(-50%);z-index:15;width:min(400px,calc(100vw - 28px));background:linear-gradient(180deg,#06210f,#020c06);border:2px solid #5dff8a;border-radius:16px;padding:18px;box-shadow:0 20px 60px rgba(0,0,0,.7);color:#c8ffd6}
 #pterm h2{margin:0 0 10px;font-size:30px;color:#5dff8a}#pt-slots{display:flex;gap:8px;justify-content:center;direction:ltr;margin-bottom:8px}#pt-slots .slot{border-color:#2f9a52;width:64px;height:64px}
 #pt-slots .slot.bad{border-color:#ff6b6b}#pt-msg{min-height:26px;text-align:center;font-size:16px;margin-bottom:8px}#pt-msg.bad{color:#ff9b8b}
+#pterm.won{right:50%;transform:translate(50%,-50%);width:min(540px,calc(100vw - 28px));padding:30px 26px}#pterm.won .pt-found{font-size:46px}.pt-bravo{font-size:20px;color:#fff;margin:0 0 6px}
+#confetti{position:fixed;inset:0;width:100vw;height:100vh;z-index:14;pointer-events:none}
 #pt-done{text-align:center}#pt-done .pt-found{font-size:30px;font-weight:800;color:#5dff8a;margin:6px 0 14px}#pt-open{font-size:20px;padding:12px 26px;background:linear-gradient(180deg,#2bbf8a,#178a62);margin:0 auto}#pt-note{color:#ffd9a8;min-height:20px}#pt-done .pt-dl{display:block;margin:12px auto 0;color:#bfefff;font-size:16px;text-decoration:underline}
 #cl-slots{display:flex;gap:10px;justify-content:center;margin-bottom:8px}
 .clf{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:15px;color:#e9c77a}
@@ -207,6 +209,7 @@ body.inspecting #c{cursor:grab} body.inspecting.dragging #c{cursor:grabbing}
     <button id="btn-hint" title="רמז (H)">רמז</button>
     <button id="btn-cards" hidden>כרטיסים</button>
     <button id="btn-mute" aria-pressed="false" title="השתקה (M)">סאונד: פועל</button>
+    <button id="btn-gfx" aria-pressed="false" title="גרפיקה קלה למחשבים איטיים">גרפיקה: רגילה</button>
     <button id="btn-help" title="מקשים">מקשים</button>
     <button id="btn-restart">התחלה מחדש</button>
   </div>
@@ -273,11 +276,12 @@ body.inspecting #c{cursor:grab} body.inspecting.dragging #c{cursor:grabbing}
   </div>
   <div id="cu-status" role="status" aria-live="polite"></div>
 </div>
+<canvas id="confetti" hidden aria-hidden="true"></canvas>
 <div id="pterm" hidden role="dialog" aria-label="המצגת של ירדן">
   <button class="x" id="pt-close" aria-label="סגירה" style="position:absolute;top:8px;left:8px;min-width:40px;min-height:40px;padding:0;justify-content:center">✕</button>
   <h2>המצגת של ירדן</h2>
   <div id="pt-entry"><div class="slots" id="pt-slots"></div><div id="pt-msg" role="status" aria-live="assertive"></div><div class="vl-digits" id="pt-digits"></div><div class="kp-actions"><button id="pt-del">מחיקה</button><button id="pt-ok">אישור</button></div></div>
-  <div id="pt-done" hidden><p class="pt-found">המצגת נמצאה!</p><button id="pt-open">פתיחת המצגת</button><a id="pt-dl" class="pt-dl">הורדת המצגת (PDF)</a><p id="pt-note"></p></div>
+  <div id="pt-done" hidden><p class="pt-found">המצגת נמצאה!</p><p class="pt-bravo">כל הכבוד, פתרתם את הקווסט!</p><button id="pt-open">פתיחת המצגת</button><a id="pt-dl" class="pt-dl">הורדת המצגת (PDF)</a><p id="pt-note"></p></div>
 </div>
 <div id="clock" hidden role="dialog" aria-label="מנעול הארגז">
   <button class="x" id="cl-close" aria-label="סגירה" style="position:absolute;top:8px;left:8px;min-width:40px;min-height:40px;padding:0;justify-content:center">✕</button>
@@ -430,11 +434,9 @@ const CONFIG = {
       'הקיפו את הכד ובדקו מה מופיע מאחוריו.',
       "חפשו במודל את המדריך ‘מרעיון לאובייקט ב־Unity’.",
       'מצאו במדריך איזה כלי מתאים לכל אחד משלושת התיאורים שעל הכד.',
-      'בחרו בכל טבעת את האות הראשונה בשם הכלי המתאים, ואז לחצו על כפתור הבדיקה.',
+      'בחרו בכל טבעת את האות הראשונה בשם הכלי המתאים, ואז לחצו על כפתור הבדיקה. הצירוף הנכון פותח את דלת חדר המטלות.',   // D-069: ממתין לאישור המרצה
     ],
-    vaseOpen: ['בתוך הכד מחכה משהו. קחו אותו.'],
-    key: ['על ראש המפתח יש סמל. חפשו אותו על אחת הדלתות.', 'עקבו אחרי התפר הוורוד שעל הרצפה עד לדלת חדר המטלות.'],
-    bayNext: ['דלת חדר המטלות פתוחה. היכנסו.'],
+    bayNext: ['דלת חדר המטלות פתוחה. עקבו אחרי התפר הוורוד שעל הרצפה.'],   // D-069: ממתין לאישור המרצה
     // חדר המטלות: הרמזים של העמדה הפעילה (האחרונה שהשחקנים התקרבו אליה או הרימו ממנה פריט)
     assign0: ['בחדר שלוש עמדות, אחת לכל מטלה. אפשר להתחיל בכל אחת מהן.'],
     assign1: ['חפשו את דוגמת הצבעים בחומרי מטלה 1.', 'בדקו את קודי הצבע ואת התפקיד של כל צבע בדוגמה.'],
@@ -442,8 +444,8 @@ const CONFIG = {
     assign3: ["בסעיף ‘מה מגישים’ במטלה 3 מצוין אילו תיקיות מצרפים לפרויקט Unity.", 'בחרו שלוש תיקיות. הסדר שלהן בארגז אינו חשוב. סגרו את המכסה כדי לבדוק.'],
     chest: ['כל עמדה שפתרתם הציגה מספר ליד מספר המטלה.', 'הזינו את המספר של כל מטלה בשדה שלה.'],
     tokens: ['האסימונים שייכים למכונה בחדר הראשון.'],
-    claw: ['הכניסו אסימון לפתח המכונה כדי להפעיל אותה.', 'הסמל שעל האסימון מופיע גם על אחד הצעצועים.', 'כוונו את הזרוע מעל הצעצוע המתאים. הביטו גם מהצד כדי לבדוק את העומק, ואז הורידו את התופסן.'],
-    clawPlay: ['הסמל שעל האסימון מופיע גם על אחד הצעצועים.', 'כוונו את הזרוע מעל הצעצוע המתאים. הביטו גם מהצד כדי לבדוק את העומק, ואז הורידו את התופסן.'],
+    claw: ['הכניסו אסימון לחריץ שבמכונה. המכונה תעשה את השאר.', 'הצעצוע שהמכונה הוציאה מחכה בתא האיסוף. קחו אותו וסובבו אותו.'],   // D-070: ממתין לאישור המרצה
+    clawPlay: ['המכונה פועלת. חכו שהזרוע תסיים.'],   // D-070: ממתין לאישור המרצה
     robot: ['קחו את הצעצוע מתא האיסוף וסובבו אותו. בדקו את הגב שלו.', 'הזינו את הקוד שמצאתם במסוף שליד המכונה.'],
     done: [],   // הסיום הוא הודעת הצלחה קבועה וכפתור "פתיחת המצגת", לא רמז
   },
@@ -470,7 +472,9 @@ const CONFIG = {
     // דוגמת Firewatch במצגת "הגשה מטלה 1" (שקף 7). ערכים לימודיים מהמצגת, לא מפרט רשמי של מפתחי המשחק
     COLORS: { brand: '#FFAD01', selection: '#FF9100', environment: '#122F41' },
     ROLE_NAMES: { brand: 'מותג', selection: 'בחירה', environment: 'סביבה' },
-    CARTRIDGES: ['#FF9100', '#122F41', '#FFA500', '#FFAD01', '#FF8C00'],   // שלוש נכונות + שתי מסיחות כתומות קרובות (לא מופיעות במצגת)
+    CARTRIDGES: ['#8DC63F', '#FFA500', '#122F41', '#F28AC0', '#FF9900',
+                 '#0A0A0A', '#1B3A4B', '#FFAD01', '#E83592', '#FFB000',
+                 '#6C7B3A', '#FF9100', '#F2F2F2', '#0F2A3D', '#FF8C00'],   // 15 על השולחן (D-068): 3 נכונות; 6 מצבעי המצגות של המרצה (ליים, ורודים, שחור, לבן־שבור, זית), למי שלא נכנס למטלה; 6 קרובות לנכונות (כתומים וכחול כהה)
     // עמדה 02: קובץ מטלה 2 מפנה לפודקסט "היסטוריה לילדים" (אומת בקובץ המטלה המקומי)
     RADIO: {
       DIALS: [
@@ -486,14 +490,14 @@ const CONFIG = {
     },
     // עמדה 03: סעיף "מה מגישים" בקובץ מטלה 3 — Assets, Packages, ProjectSettings; ללא Library ו־Temp (אומת בקובץ המטלה המקומי)
     PACK: {
-      BOXES: ['Assets', 'Packages', 'ProjectSettings', 'Library', 'Temp'],
+      BOXES: ['Assets', 'Packages', 'ProjectSettings', 'Library', 'Temp', 'Logs', 'UserSettings', 'obj', 'Build', '.vs'],   // D-068: עוד 5 מסיחות, תיקיות Unity שלא מגישים
       SOLUTION: ['Assets', 'Packages', 'ProjectSettings'],
-      SPOT_OF: { Assets: 0, Library: 1, Packages: 2, ProjectSettings: 3, Temp: 4 },   // עגלה למעלה, עגלה למטה, מתחת לשולחן, מדף ×2
+      SPOT_OF: { Assets: 0, Library: 1, Packages: 2, ProjectSettings: 3, Temp: 4, Logs: 5, UserSettings: 6, obj: 7, Build: 8, '.vs': 9 },   // עגלה למעלה, עגלה למטה, מתחת לשולחן, מדף ×2
       SIGN: ['אורזים את פרויקט Unity', "מה נכנס לארגז? בדקו ב'מה מגישים'."],
       NOT_FULL: 'מלאו את שלושת התאים לפני סגירת המכסה.', FULL: 'שלושת התאים מלאים. סגרו את המכסה בידית.', NO_ROOM: 'שלושת התאים מלאים. כוונו לתא כדי להחליף תיקייה.', HOW: 'הביאו תיקיות מהחדר והניחו אותן בארגז.',
       WRONG: 'האריזה עדיין לא מתאימה. בדקו אילו תיקיות נדרשות בפרויקט.',
     },
-    S1_SIGN: ['רמזי הצבע נמצאים בדוגמת הניתוח במודל.'],
+    S1_SIGN: [],   // רק "מטלה 01": בלי רמזים כתובים במרחב עד שמבקשים רמז (D-068)
     S1_WRONG: 'לא מתאים לשדה הזה.',
     CHEST_HINT: 'שלוש מטלות. שלושה משקלים.',
     TOKENS_MSG: 'נאספו 3 אסימונים למכונת הצעצועים.',
@@ -535,7 +539,7 @@ const CONFIG = {
     TICK_SECONDS: 10,   // תקתוק בכל שנייה בשניות האחרונות
   },
   // ===== RADAR RALLY: רמז לנקודות המבט של חידה 1 (D-037) =====
-  RADAR: { SECONDS: 30, SPOTS: { UX: [1.7, 7.4, Math.PI], UI: [8.38, 2.45, -Math.PI / 2], '3D': [-8.38, -4.0, Math.PI / 2], AI: [4.375, -9.38, 0] }, NO_TARGETS: 'המכונה לא מוצאת יעדים.', DONE_MSG: 'השבר הזה כבר אצלכם.' },   // ארבע מכונות צמודות לקירות, כל אחת בקיר אחר, אחת לכל צמד, בלי כיתוב (D-054)
+  RADAR: { SECONDS: 30, SPOTS: { UX: [-6.5, 7.4, Math.PI], UI: [8.38, -4.6, -Math.PI / 2], '3D': [-8.38, 4.0, Math.PI / 2], AI: [7.6, -9.38, 0] }, NO_TARGETS: 'המכונה לא מוצאת יעדים.', DONE_MSG: 'השבר הזה כבר אצלכם.' },   // ארבע מכונות צמודות לקירות, כל אחת בקיר אחר (D-054), ובקצה הרחוק של הקיר מהעקבות שלה, 7–9 מ' (D-067)
   // ===== המצגת (D-050): PDF מוצפן ב־AES-GCM, המפתח נגזר מהקוד (PBKDF2). נוצר בעזרת game/tools/encrypt-slides.mjs =====
   SLIDES: { FILE: 'slides.bin', NAME: 'מפגש-1_אחרי-הקווסט.pdf' },
   SIGN_TEXT: ['UX', '·', 'UI', '·', '3D', '·', 'AI'],
@@ -1006,6 +1010,13 @@ const CLAW={active:false,robotOut:false,solved:false,reset(){},init(){}};
   const slotG=new THREE.Group();slotG.position.set(.27,.055,-.01);panel.add(slotG);
   box(.16,.024,.12,chrome,0,0,0,slotG);box(.08,.026,.014,new THREE.MeshBasicMaterial({color:0x050505}),0,.002,0,slotG);
   const slotLed=neonMat('#ffcf3a',.3);{const m=new THREE.Mesh(new THREE.SphereGeometry(.012,8,6),slotLed);m.position.set(.06,.01,.04);slotG.add(m);}
+  // D-068: an arcade "INSERT COIN" sign and a ring around the slot blink while no try is running, so passers-by see that the machine wants a token
+  const coinTex=canvasTex(256,64,(c,W,H)=>{c.fillStyle='#0b0806';c.fillRect(0,0,W,H);c.fillStyle='#ffcf3a';c.font='900 34px "Arial Black",Impact,Arial';c.textAlign='center';c.textBaseline='middle';c.direction='ltr';c.fillText('INSERT COIN',W/2,H/2+2);});
+  const coinMat=new THREE.MeshBasicMaterial({map:coinTex,toneMapped:false});
+  {const m=new THREE.Mesh(new THREE.PlaneGeometry(.22,.055),coinMat);m.position.set(.27,.07,-.1);m.rotation.x=-PI/2+.7;panel.add(m);markNoRay(m);}
+  {const m=new THREE.Mesh(new THREE.PlaneGeometry(.4,.1),coinMat);m.position.set(.08,.24,.607);g.add(m);markNoRay(m);}   // the same sign, large, on the front: visible from across the room
+  const ringMat=neonMat('#ffcf3a',1);{const r=new THREE.Mesh(new THREE.TorusGeometry(.07,.006,6,28),ringMat);r.rotation.x=PI/2;r.position.set(0,.014,0);slotG.add(r);markNoRay(r);}
+  updaters.push((dt,t)=>{const on=!CLAW.active&&!CLAW.solved&&!CLAW.robotOut&&((t*1.4)%1)<.6;coinMat.color.setScalar(on?1.6:.18);ringMat.color.set('#ffcf3a').multiplyScalar(on?2.4:.25);});
   slotG.userData.interact={get label(){return CLAW.active?'יש ניסיון פעיל':state.tokens>0?'הכנסת אסימון':noTok()?'חריץ אסימון · אין אסימונים':'חריץ אסימון';},action:()=>insert()};
   // extra try (lights up only when the tokens ran out before the robot was rescued)
   const exMat=new THREE.MeshStandardMaterial({color:0x2a6a3a,roughness:.4,emissive:0x3dff7a,emissiveIntensity:0});
@@ -1071,12 +1082,16 @@ const CLAW={active:false,robotOut:false,solved:false,reset(){},init(){}};
   const extraAvailable=()=>state.tokens<=0&&!CLAW.active&&!CLAW.robotOut&&!C.busy&&azTaken();
   function setPanel(){dropMat.emissiveIntensity=CLAW.active?1.2:0;slotLed.color.set('#ffcf3a').multiplyScalar(state.tokens>0&&!CLAW.active?1.6:.3);exMat.emissiveIntensity=extraAvailable()?1.1:0;inLight.intensity=CLAW.active?2.2:1.8;renderUI();}
   function insert(){
-    if(CLAW.active){enterMode();return;}
-    if(C.busy)return;
+    if(CLAW.active||C.busy)return;
+    if(CLAW.robotOut){toast('הרובוט כבר בחוץ.');return;}   // D-070: the token is kept
     if(state.tokens<=0){toast(extraAvailable()?'האסימונים נגמרו. אפשר ללחוץ על "ניסיון נוסף".':CC.NO_TOKENS);AUDIO.play('locked');return;}
-    state.tokens--;CLAW.active=true;AUDIO.play('coin');renderTokens();setPanel();setObjective();toast(`אסימון הוכנס. נותרו ${state.tokens}.`,'good');
-    later(.35,()=>enterMode());
+    state.tokens--;CLAW.active=true;AUDIO.play('coin');renderTokens();setPanel();setObjective();toast('אסימון הוכנס. המכונה פועלת.','good');
+    later(.5,()=>autoGrab());
   }
+  // D-070: the machine catches the robot by itself: the claw travels over it, then the usual drop (lower, close, raise, chute)
+  function autoGrab(){const r=TOYS.robot;if(!r||r.where!=='pile'){doDrop();return;}
+    C.busy=true;renderUI();AUDIO.play('motor');const x0=C.x,z0=C.z,x1=r.outer.position.x,z1=r.outer.position.z;
+    tween(1.3,p=>{const e=easeInOut(p);C.x=lerp(x0,x1,e);C.z=lerp(z0,z1,e);},()=>doDrop('robot'));}
   function extraTry(){if(!extraAvailable()){toast(CLAW.active?'יש כבר ניסיון פעיל.':state.tokens>0?'יש לכם עוד אסימונים.':CC.NO_TOKENS);if(!CLAW.active&&state.tokens<=0)AUDIO.play('locked');return;}
     CLAW.active=true;AUDIO.play('coin');setPanel();setObjective();toast('ניסיון נוסף.','good');later(.35,()=>enterMode());}
   function joystick(){if(CLAW.active){enterMode();return;}toast(state.tokens>0?'הכניסו אסימון לחריץ.':extraAvailable()?'אפשר ללחוץ על "ניסיון נוסף".':CC.NO_TOKENS);}
@@ -1086,9 +1101,9 @@ const CLAW={active:false,robotOut:false,solved:false,reset(){},init(){}};
     $('cu-status').textContent=C.busy?'התופסן בפעולה…':CLAW.active?'ניסיון אחד לכל אסימון.':state.tokens>0?`אין ניסיון פעיל. נותרו ${state.tokens} אסימונים.`:'אין ניסיון פעיל.';}
   function dropPressed(){if(!CLAW.active){joystick();return;}if(C.busy)return;doDrop();}
   // the drop: lower, close, raise, carry to the chute, open
-  function doDrop(){
+  function doDrop(force){
     C.busy=true;renderUI();AUDIO.play('motor');
-    let target=null,best=-1;for(const id of toyOrder){const t=TOYS[id];if(t.where!=='pile')continue;const d=Math.hypot(t.outer.position.x-C.x,t.outer.position.z-C.z);if(d<=CC.GRAB_RADIUS){const top=t.outer.position.y+t.h;if(top>best){best=top;target=t;}}}
+    let target=force&&TOYS[force]&&TOYS[force].where==='pile'?TOYS[force]:null,best=target?1e9:-1;for(const id of (target?[]:toyOrder)){const t=TOYS[id];if(t.where!=='pile')continue;const d=Math.hypot(t.outer.position.x-C.x,t.outer.position.z-C.z);if(d<=CC.GRAB_RADIUS){const top=t.outer.position.y+t.h;if(top>best){best=top;target=t;}}}
     const y0=C.y,yLow=target?target.outer.position.y+target.h+.06:F+.16;
     tween(1.1,p=>{C.y=lerp(y0,yLow,easeInOut(p));},()=>{AUDIO.play('clawclose');
       tween(.35,p=>{C.open=lerp(.55,.08,p);},()=>{
@@ -1163,7 +1178,16 @@ const CLAW={active:false,robotOut:false,solved:false,reset(){},init(){}};
     SL.busy=false;if(state.mode!=='pterm'||CLAW.solved)return;
     if(!pdf){$('pt-msg').textContent=CC.WRONG_MSG;$('pt-msg').className='bad';AUDIO.play('wrong');renderTerm('bad');return;}
     $('pt-msg').textContent='';SL.url=URL.createObjectURL(new Blob([pdf],{type:'application/pdf'}));const dl=$('pt-dl');dl.href=SL.url;dl.download=CONFIG.SLIDES.NAME;
-    CLAW.solved=true;CLAW.solvedAt=clock;AUDIO.play('fanfare');AUDIO.win=true;celebrate=3.2;drawScreen(false);renderTerm();setObjective();$('pt-open').focus();}
+    CLAW.solved=true;CLAW.solvedAt=clock;AUDIO.play('fanfare');AUDIO.win=true;celebrate=3.2;drawScreen(false);renderTerm();setObjective();$('pterm').classList.add('won');confetti();$('pt-open').focus();}
+  // D-071: confetti over the whole screen when the presentation is found (fewer and slower with reduced motion)
+  function confetti(){const cv=$('confetti'),g=cv.getContext('2d');cv.hidden=false;const W=cv.width=innerWidth,H=cv.height=innerHeight;
+    const cols=['#22E3D3','#FF4FA3','#FFB238','#A86BFF','#8DC63F','#ffffff'],N=reduceMotion?50:220,dur=reduceMotion?3:5.5;
+    const P=Array.from({length:N},()=>({x:W*(.2+Math.random()*.6),y:H*(.35+Math.random()*.2),vx:(Math.random()-.5)*W*.9,vy:-H*(.5+Math.random()*.9),r:Math.random()*6.283,vr:(Math.random()-.5)*14,w:6+Math.random()*8,h:4+Math.random()*6,c:cols[(Math.random()*cols.length)|0]}));
+    if(reduceMotion)P.forEach(p=>{p.vx*=.35;p.vy*=.35;});let t0=performance.now(),prev=t0;
+    (function step(now){const dt=Math.min(.05,(now-prev)/1000),el=(now-t0)/1000;prev=now;g.clearRect(0,0,W,H);
+      for(const p of P){p.vy+=H*1.1*dt;p.vx*=1-.9*dt;p.vy*=1-.6*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.r+=p.vr*dt;
+        g.save();g.globalAlpha=Math.max(0,Math.min(1,(dur-el)/1.2));g.translate(p.x,p.y);g.rotate(p.r);g.fillStyle=p.c;g.fillRect(-p.w/2,-p.h/2,p.w,Math.abs(Math.cos(p.r*1.7))*p.h+1);g.restore();}
+      if(el<dur)requestAnimationFrame(step);else{g.clearRect(0,0,W,H);cv.hidden=true;}})(t0);}
   function openPresentation(){if(!SL.url){toast('המצגת עוד נעולה.');return;}const a=document.createElement('a');a.href=SL.url;a.target='_blank';a.rel='noopener';document.body.appendChild(a);a.click();a.remove();}
   /* ---------- per-frame ---------- */
   updaters.push((dt,t)=>{
@@ -1185,7 +1209,7 @@ const CLAW={active:false,robotOut:false,solved:false,reset(){},init(){}};
       INSP[id]={outer:t.outer,inner:t.inner,innerY:robotish?-.13:-.08,scale:robotish?1.3:1.4,title:robotish?'רובוט':'צעצוע',trayTitle:robotish?'רובוט':undefined,material:robotish,light:.35,q0:new THREE.Quaternion(),
         onExit:robotish?null:()=>{t.where='chute';if(!chute.includes(id))chute.push(id);layoutChute();}};}
   };
-  CLAW.reset=()=>{CLAW.active=false;CLAW.robotOut=false;CLAW.solved=false;CLAW.solvedAt=0;C.busy=false;C.carry=null;C.x=HOME.x;C.z=HOME.z;C.y=REST_Y;C.open=.55;mode=false;celebrate=0;P.entry='';
+  CLAW.reset=()=>{$('pterm').classList.remove('won');$('confetti').hidden=true;CLAW.active=false;CLAW.robotOut=false;CLAW.solved=false;CLAW.solvedAt=0;C.busy=false;C.carry=null;C.x=HOME.x;C.z=HOME.z;C.y=REST_Y;C.open=.55;mode=false;celebrate=0;P.entry='';
     chute.length=0;for(const id of toyOrder)backToPile(TOYS[id]);$('clawui').hidden=true;$('pterm').hidden=true;drawScreen(true);setPanel();placeClaw();};
   // D-051: a loaded try stays loaded (the arm waits at home, not busy); a drop in progress is replayed from the start,
   // so a toy that was in the claw is back in the pile. Toys other than the robot never stay in the chute.
@@ -1317,6 +1341,29 @@ function drawLock(entry,status='idle'){
   lockDisplay.needsUpdate=true;
 }
 drawLock(['','','','']);
+/* ===================== D-068: an old TV on the floor beside the puzzle-1 door =====================
+   Every collected pair appears on its screen in its own neon colour (in the order collected), so the colours stay in
+   the room next to the door squares. The pairs no longer go to the tray. */
+const TV=(()=>{
+  const X=1.45,Z=-8.25,g=new THREE.Group();g.position.set(X,0,Z);g.rotation.y=-.25;g.scale.setScalar(1.5);scene.add(g);
+  const body=new THREE.MeshStandardMaterial({color:0x5a4632,roughness:.55,metalness:.1});
+  box(.62,.48,.46,body,0,.24+.06,0,g);box(.5,.06,.36,MAT.black,0,.03,0,g);
+  box(.5,.4,.02,MAT.black,-.03,.3+.0,.235,g);
+  for(const [x,y] of [[.25,.42],[.25,.34]]){const k=new THREE.Mesh(new THREE.CylinderGeometry(.022,.022,.03,14),MAT.steel);k.rotation.x=PI/2;k.position.set(x,y,.24);g.add(k);}
+  for(const s of [-1,1]){const a=new THREE.Mesh(new THREE.CylinderGeometry(.005,.005,.42,6),MAT.steel);a.position.set(s*.1,.68,-.05);a.rotation.z=s*.45;g.add(a);}
+  const tex=canvasTex(512,400,()=>{});
+  const scr=new THREE.Mesh(new THREE.PlaneGeometry(.42,.33),new THREE.MeshBasicMaterial({map:tex,toneMapped:false}));scr.position.set(-.03,.3,.247);g.add(scr);markNoRay(scr);
+  addCollider(X,Z,1.0,.8,'tv');
+  function draw(t=0){const c=tex.userData.ctx,W=512,H=400;c.fillStyle='#05060a';c.fillRect(0,0,W,H);
+    const pairs=state.collected.filter(id=>CONFIG.PAIRS[id]);
+    for(let i=0;i<4;i++){const cx=(i%2)*W/2,cy=Math.floor(i/2)*H/2,p=pairs[i];c.strokeStyle='#1c2030';c.lineWidth=4;c.strokeRect(cx+10,cy+10,W/2-20,H/2-20);
+      if(!p){c.fillStyle='#2a2e3c';for(let k=0;k<60;k++)c.fillRect(cx+14+((k*53+i*31)%(W/2-30)),cy+14+((k*97+i*17)%(H/2-30)),3,3);continue;}
+      const col=CONFIG.PAIRS[p].color;c.fillStyle=col;c.shadowColor=col;c.shadowBlur=26;c.font='900 104px "Arial Black",Impact,Arial';c.textAlign='center';c.textBaseline='middle';c.direction='ltr';c.fillText(p,cx+W/4,cy+H/4-8);c.shadowBlur=0;
+      c.fillRect(cx+W/4-40,cy+H/2-44,80,14);}
+    c.fillStyle='rgba(0,0,0,.28)';for(let y=0;y<H;y+=4)c.fillRect(0,y,W,2);tex.needsUpdate=true;}
+  g.userData.interact={label:'טלוויזיה',action:()=>toast(state.collected.some(id=>CONFIG.PAIRS[id])?'החלקים שאספתם מופיעים על המסך.':'המסך מרצד. משהו עוד לא הגיע אליו.')};
+  return{draw};
+})();
 
 // the broken sign above the door
 const SIGN={group:null,glyphs:[],sub:null,lit:false};
@@ -1625,6 +1672,7 @@ function applySave(sv){
   if(state.solved)MZ.restore(sv.mz);
   state.tokens=sv.tokens;
   AZ.restore(sv.az,sv.tray);
+  if(MZ.S.solved&&!AZ.A.doorOpen)AZ.openDoorNow();   // D-069: the solved vase opens the door
   if(sv.back&&AZ.A.doorOpen)BACK.openNow();
   MZ.S.keyUsed=MZ.S.keyTaken&&AZ.A.doorOpen;
   if(!AZ.A.chest.taken)state.tokens=0;else CLAW.restore(sv.claw);
@@ -1665,6 +1713,7 @@ let tipTimer=0;
 function tip(key,msg,ms=4500){if(state.tips[key])return;state.tips[key]=true;const t=$('tip');t.innerHTML=msg;t.classList.add('show');clearTimeout(tipTimer);tipTimer=setTimeout(()=>t.classList.remove('show'),ms);}
 const pairHTML=p=>`<bdi class="pair" dir="ltr">${p}</bdi>`;
 const pairCount=()=>state.collected.filter(id=>CONFIG.PAIRS[id]).length;
+const trayIds=()=>state.collected.filter(id=>!CONFIG.PAIRS[id]);   // D-068: the pairs are shown on the TV by the door, not in the tray
 const zoneKey=()=>player.pos.z<-10.2?(player.pos.x<-7.3?'assign':'materials'):'arcade';
 function setObjective(){
   saveNow();   // D-051: every milestone updates the objective, so it is also the save point
@@ -1673,7 +1722,7 @@ function setObjective(){
   const n=pairCount();let html;
   if(state.inRoom2)html='עברתם לחלל הבא.';
   else if(CLAW.solved)html='<b>המצגת נמצאה!</b> אפשר לפתוח אותה במסוף.';
-  else if(CLAW.active)html='<b>מכונת הצעצועים פעילה.</b> הזיזו את הזרוע והורידו את התופסן.';
+  else if(CLAW.robotOut)html='<b>המסוף "המצגת של ירדן"</b> מחכה לקוד.';   // D-070: the machine catches the robot by itself; no claw instructions
   else if(state.tokens>0)html=`<b>יש לכם אסימונים (${state.tokens}).</b> מכונת הצעצועים מחכה.`;
   else if(typeof AZ!=='undefined'&&AZ.A.chest.taken)html='<b>המסוף "המצגת של ירדן"</b> מחכה לקוד.';
   else if(state.doorOpen)html='<b>הדלת פתוחה.</b> עברו לחלל הבא.';
@@ -1684,15 +1733,16 @@ function setObjective(){
 }
 function renderTray(){
   saveNow();   // D-051: items entering or leaving the tray
+  TV.draw();
   const el=$('tray-items');el.innerHTML='';
-  if(!state.collected.length){el.innerHTML='<span class="empty">ריק</span>';return;}
-  state.collected.forEach((p,i)=>{const I=INSP[p];const b=document.createElement('button');b.className='tray-item'+(state.held===p?' held':'')+(I.ltr?'':' he');b.title='בדיקה ('+(i+1)+')';b.setAttribute('aria-label','בדיקת '+(I.trayTitle||I.title)+(state.held===p?' (ביד)':''));b.innerHTML=`<span class="pair">${I.trayTitle||I.title}</span>`+(state.held===p?'<span class="hand">ביד</span>':'');b.dataset.pair=p;b.onclick=()=>{if(state.mode==='play')openInspect(p,false);};el.appendChild(b);if(i===state.collected.length-1&&state.justAdded===p){b.classList.add('pop');b.addEventListener('animationend',()=>b.classList.remove('pop'),{once:true});state.justAdded=null;}});
+  if(!trayIds().length){el.innerHTML='<span class="empty">ריק</span>';return;}
+  trayIds().forEach((p,i)=>{const I=INSP[p];const b=document.createElement('button');b.className='tray-item'+(state.held===p?' held':'')+(I.ltr?'':' he');b.title='בדיקה ('+(i+1)+')';b.setAttribute('aria-label','בדיקת '+(I.trayTitle||I.title)+(state.held===p?' (ביד)':''));b.innerHTML=`<span class="pair">${I.trayTitle||I.title}</span>`+(state.held===p?'<span class="hand">ביד</span>':'');b.dataset.pair=p;b.onclick=()=>{if(state.mode==='play')openInspect(p,false);};el.appendChild(b);if(i===state.collected.length-1&&state.justAdded===p){b.classList.add('pop');b.addEventListener('animationend',()=>b.classList.remove('pop'),{once:true});state.justAdded=null;}});
 }
 // which hint set is relevant: the room the players stand in, and only the stage that is still open there
 function hintStage(){
   const z=zoneKey();
   if(z==='materials'){const inBay=Math.abs(player.pos.x)<3.95&&player.pos.z<-14.1;
-    if(!MZ.S.solved)return inBay?'materials':'bayOut';if(!MZ.S.keyTaken)return'vaseOpen';if(!AZ.A.doorOpen)return'key';return'bayNext';}
+    if(!MZ.S.solved)return inBay?'materials':'bayOut';return'bayNext';   /* D-069: the solved vase opens the door */}
   if(z==='assign'){if(AZ.A.chest.taken)return'tokens';if(AZ.missing().length){const a=AZ.A.active;return a&&!AZ.A['s'+a].solved?'assign'+a:'assign0';}return'chest';}
   if(!state.doorOpen)return'arcade';
   if(CLAW.solved)return'done';if(CLAW.robotOut)return'robot';if(AZ.A.chest.taken)return CLAW.active?'clawPlay':'claw';return'arcadeNext';
@@ -1779,7 +1829,7 @@ function exitInspect(){
   setBackdrop(false);AUDIO.play('return');
   $('inspect-ui').hidden=true;$('inspect-top').hidden=true;$('crosshair').hidden=false;$('tray').style.opacity=1;document.body.classList.remove('inspecting','dragging');
   state.inspectPair=null;
-  if(pairCount()===4&&!state.tips.allFour){tip('allFour','כל ארבעת החלקים במגש. הדלת מחכה.',4500);}
+  if(pairCount()===4&&!state.tips.allFour){tip('allFour','כל ארבעת החלקים על המסך שליד הדלת. הדלת מחכה.',4500);}
 }
 function rotateInspect(dx,dy){
   if(state.mode!=='inspect')return;const o=INSP[state.inspectPair].outer;
@@ -1983,7 +2033,7 @@ const MZ=(()=>{
     /* D-065: hanging lamps over the threshold and along the left corridor, so the way to the corridor reads from the door */
     const hallLamp=(x,z,i,d)=>{const sh=new THREE.Mesh(new THREE.ConeGeometry(.3,.24,20,1,true),new THREE.MeshStandardMaterial({color:0x1a1622,roughness:.5,metalness:.6,side:THREE.DoubleSide}));sh.position.set(x,4.3,z);scene.add(sh);
       const b=new THREE.Mesh(new THREE.SphereGeometry(.08,12,8),neonMat('#ffcf8a',3));b.position.set(x,4.2,z);scene.add(b);markNoRay(b);const cd=new THREE.Mesh(new THREE.CylinderGeometry(.006,.006,.6),MAT.cable);cd.position.set(x,4.7,z);scene.add(cd);markNoRay(cd);pLight(0xffc98a,i,d,x,4.1,z);};
-    hallLamp(0,-18.3,6,9);for(const z of [-18.8,-22.2,-25.6])hallLamp(-5.6,z,6.5,8);pLight(0x7dff6a,1.0,3.0,-6.3,1.9,-26.5);pLight(0xeef0ff,2.2,3.6,-3.2,2.6,-27.8);pLight(0xffd9a0,2.6,4.5,-6.2,2.5,-26.5); /* the assignments-room door */pLight(0xffe2b8,2.2,3.6,5.4,2.3,-19.5);
+    hallLamp(0,-18.3,6,9);pLight(0x9bf25a,1.8,3.8,-6.4,2.7,-19.5);/* D-068: a green light on the assignments-room door */for(const z of [-18.8,-22.2,-25.6])hallLamp(-5.6,z,6.5,8);pLight(0x7dff6a,1.0,3.0,-6.3,1.9,-26.5);pLight(0xeef0ff,2.2,3.6,-3.2,2.6,-27.8);pLight(0xffd9a0,2.6,4.5,-6.2,2.5,-26.5); /* the assignments-room door */pLight(0xffe2b8,2.2,3.6,5.4,2.3,-19.5);
   })();
 
   /* ---------- the grey cut-away room (composition of the guide's cover) ---------- */
@@ -2176,12 +2226,9 @@ const MZ=(()=>{
     tween(reduceMotion?.3:1.9,p=>{const sp=lerp(-.15,1.95,easeInOut(p));vaseMat.emissiveIntensity=Math.sin(p*PI)*.9;
       for(const r of rings)if(!r.green&&sp>r.h-.05){r.green=true;r.mat.color.set('#a6f56a');r.mat.emissive.set('#2c6e0c');r.mat.emissiveIntensity=.35;}
       renderer.shadowMap.needsUpdate=true;},()=>{
-      lidDisc.material=knob.material=vaseGreen;AUDIO.play('vase');
-      tween(reduceMotion?.2:1.5,p=>{lidPivot.rotation.x=-easeInOut(p)*1.95;renderer.shadowMap.needsUpdate=true;});
-      later(1.0,()=>{homeKey();key.outer.visible=true;AUDIO.play('digit');
-        const k=key.outer,front=KEY_HOME.clone().add(V3(KEY_FRONT.x,KEY_FRONT.y-KEY_Y0,KEY_FRONT.z));
-        tween(1.1,p=>{k.position.y=lerp(KEY_Y0,KEY_Y1,easeOut(p));keyLight.intensity=p*3.2;},()=>{const p0=k.position.clone();
-          tween(.9,p=>{const e=easeInOut(p);k.position.lerpVectors(p0,front,e);k.position.y+=Math.sin(p*PI)*.08;keyLight.position.set(k.position.x,k.position.y+.6,k.position.z+.3);},()=>{S.busy=false;S.flow=true;setObjective();});});});});
+      // D-069: no key any more. The vase glows, the pink stitch runs along the floor to the assignments-room door, and the door opens
+      AUDIO.play('vase');S.keyTaken=true;S.keyUsed=true;showPink();
+      later(reduceMotion?.3:1.6,()=>{AZ.openDoor();S.busy=false;S.flow=true;setObjective();toast('דלת חדר המטלות נפתחה.','good');});});
   }
   function takeKey(){
     if(!S.solved||S.keyTaken||S.busy||state.mode!=='play')return;
@@ -2195,8 +2242,7 @@ const MZ=(()=>{
   function objective(){
     const azOpen=typeof AZ!=='undefined'&&AZ.A.doorOpen;
     if(azOpen)return`<b>הדלת פתוחה.</b> ${CONFIG.ASSIGN.ROOM_NAME} מחכה.`;
-    if(S.keyTaken)return'<b>נאסף מפתח.</b> איזו דלת הוא פותח?';
-    if(S.solved)return'<b>הכד נפתח.</b> קחו את מה שבתוכו.';
+    if(S.solved)return'<b>הצירוף נכון.</b> הדלת נפתחת.';
     return'<b>הכד נעול</b> בשלוש טבעות של אותיות.';
   }
   function update(dt,t){
@@ -2223,9 +2269,9 @@ const MZ=(()=>{
     S.solved=true;S.flow=true;S.busy=false;S.keyTaken=!!m.keyTaken;S.keyUsed=!!m.keyUsed;
     winMats.forEach(w=>w.color.set(GREEN).multiplyScalar(1.5));capMat.emissive.set(GREEN);capMat.emissiveIntensity=.6;
     for(const r of rings){r.green=true;r.mat.color.set('#a6f56a');r.mat.emissive.set('#2c6e0c');r.mat.emissiveIntensity=.35;}
-    vaseMat.emissiveIntensity=0;lidDisc.material=knob.material=vaseGreen;lidPivot.rotation.x=-1.95;
+    vaseMat.emissiveIntensity=0;S.keyTaken=S.keyUsed=true;   // D-069: solved = the door is open, no lid and no key
     homeKey();
-    if(!S.keyTaken){const k=key.outer;k.visible=true;k.position.copy(KEY_HOME).add(V3(KEY_FRONT.x,KEY_FRONT.y-KEY_Y0,KEY_FRONT.z));keyLight.intensity=3.2;keyLight.position.set(k.position.x,k.position.y+.6,k.position.z+.3);}
+    if(false){const k=key.outer;k.visible=true;k.position.copy(KEY_HOME).add(V3(KEY_FRONT.x,KEY_FRONT.y-KEY_Y0,KEY_FRONT.z));keyLight.intensity=3.2;keyLight.position.set(k.position.x,k.position.y+.6,k.position.z+.3);}
     else{keyLight.intensity=0;pink.forEach(p=>{p.visible=true;p.count=p.userData.full;});}
     renderer.shadowMap.needsUpdate=true;
   }
@@ -2287,17 +2333,22 @@ const AZ=(()=>{
    const n=new THREE.Mesh(new THREE.PlaneGeometry(3.6,.7),new THREE.MeshBasicMaterial({map:nt,transparent:true,toneMapped:false,color:new THREE.Color(2,2,2),depthWrite:false}));n.position.set(X0+.02,3.15,CZ);n.rotation.y=PI/2;scene.add(n);markNoRay(n);
    // the door from the maintenance bay: locked; the key from the vase (same symbol) opens it
    const pivot=new THREE.Group();pivot.position.set(-7.15,0,-20.4);scene.add(pivot);
-   const doorGreen=new THREE.MeshStandardMaterial({map:canvasTex(256,256,(g,w,h)=>{g.fillStyle='#3f9a1c';g.fillRect(0,0,w,h);const r=mulberry32(77);for(let y=0;y<h;y+=6)for(let x=(y/6)%2*4;x<w;x+=9){g.strokeStyle=['#5fc22c','#2f7a12','#7fdc44'][(r()*3)|0];g.lineWidth=3;g.beginPath();g.moveTo(x,y+5);g.lineTo(x+7,y);g.stroke();}},{repeat:[2,3]}),roughness:.85,emissive:0x1a4a08,emissiveIntensity:.12});
+   // D-068: the door itself is neutral; only the key symbol glows (on the door, on the lock plate and large above the door)
+   const doorGreen=new THREE.MeshStandardMaterial({map:canvasTex(256,256,(g,w,h)=>{g.fillStyle='#3a2a1e';g.fillRect(0,0,w,h);const r=mulberry32(77);for(let y=0;y<h;y+=4){g.fillStyle=`rgba(0,0,0,${.05+r()*.12})`;g.fillRect(0,y,w,2);}},{repeat:[1,2]}),roughness:.8});
    const slab=box(.1,2.4,1.8,doorGreen,0,1.2,.9,pivot);   // green like the vase: the key from the vase opens itbox(.06,.3,.05,brass,-.06,1.1,1.6,pivot);box(.06,.3,.05,brass,.06,1.1,1.6,pivot);
    const dp=textPlate(AC.ROOM_NAME,{w:512,h:128,fs:52});for(const s of [-1,1]){const p=plane(dp,.9,.22);p.position.set(s*.056,2.05,.9);p.rotation.y=s*PI/2;pivot.add(p);}
    {const st=canvasTex(256,256,(g)=>{g.fillStyle='#1a1410';g.fillRect(0,0,256,256);g.strokeStyle='#c89b3c';g.lineWidth=10;g.strokeRect(8,8,240,240);drawKeySymbol(g,128,128,86,CONFIG.MATERIALS.KEY_SYMBOL_COLOR);});
-    for(const s of [-1,1]){const e=new THREE.Mesh(new THREE.PlaneGeometry(.34,.34),new THREE.MeshStandardMaterial({map:st,emissive:0xffffff,emissiveMap:st,emissiveIntensity:.55,roughness:.5}));e.position.set(s*.056,1.62,.9);e.rotation.y=s*PI/2;pivot.add(e);}
+    const symMats=[];for(const s of [-1,1]){const mat=new THREE.MeshStandardMaterial({map:st,emissive:0xffffff,emissiveMap:st,emissiveIntensity:.55,roughness:.5});if(s>0)symMats.push(mat);const e=new THREE.Mesh(new THREE.PlaneGeometry(.34,.34),mat);e.position.set(s*.056,1.62,.9);e.rotation.y=s*PI/2;pivot.add(e);}
+    // the large glowing sign above the door, on the bay side
+    const bigMat=new THREE.MeshBasicMaterial({map:st,toneMapped:false});{const b=new THREE.Mesh(new THREE.PlaneGeometry(.6,.6),bigMat);b.position.set(-6.98,2.8,-19.5);b.rotation.y=PI/2;scene.add(b);markNoRay(b);}
+    updaters.push((dt,t)=>{let taken=false;try{taken=MZ.S.keyTaken;}catch(e){}const open=A.doorOpen;
+      const k=open?.6:taken?1.5+.9*Math.sin(t*5):1.1+.35*Math.sin(t*1.8);bigMat.color.setScalar(k);for(const m of symMats)m.emissiveIntensity=open?.55:k*.7;});
     // the lock plate (bay side): the same symbol above a keyhole
     const lp=new THREE.Group();lp.position.set(.058,1.08,1.42);lp.rotation.y=PI/2;pivot.add(lp);
     box(.14,.24,.012,brass,0,0,0,lp);const ls=new THREE.Mesh(new THREE.PlaneGeometry(.1,.1),new THREE.MeshStandardMaterial({map:st,emissive:0xffffff,emissiveMap:st,emissiveIntensity:.55}));ls.position.set(0,.05,.008);lp.add(ls);
     box(.022,.05,.006,new THREE.MeshBasicMaterial({color:0x050505}),0,-.06,.008,lp);
     const lk=new THREE.Group();lk.position.set(0,-.06,.012);lp.add(lk);box(.014,.012,.09,brass,0,0,.045,lk);const bw=new THREE.Mesh(new THREE.TorusGeometry(.03,.008,8,20),brass);bw.position.z=.1;bw.rotation.y=PI/2;lk.add(bw);lk.visible=false;DOORA.lockKey=lk;}
-   DOORA.lockIA={get label(){return state.collected.includes('key')?'פתיחה במפתח':'מנעול הדלת';},action:()=>useDoorKey()};
+   DOORA.lockIA={label:'הדלת נעולה',action:()=>{toast('הדלת נעולה.');AUDIO.play('locked');}};   // D-069: the vase opens it
    pivot.userData.interact=DOORA.lockIA;
    DOORA.pivot=pivot;DOORA.slab=slab;DOORA.collider=addCollider(-7.15,-19.5,.3,1.9,'az-door');DOORA.open=addCollider(-8.05,-20.4,1.8,.2,'az-door-open');DOORA.open.active=false;
   }
@@ -2363,8 +2414,9 @@ const AZ=(()=>{
       const m=mq.userData.ctx;m.fillStyle='#0d0d10';m.fillRect(0,0,512,140);m.font='italic 900 64px "Arial Black",Impact,Arial';m.textAlign='center';m.textBaseline='middle';m.fillStyle=c.brand;m.fillText('FIREWATCH',256,62);m.font='600 22px "Karantina","Heebo",Arial';m.direction='rtl';m.fillStyle='#d9d4c4';m.fillText('דוגמה מהמצגת',256,114);m.direction='ltr';mq.needsUpdate=true;}
     // the three role sockets sit in the machine's lower front (label + symbol, not colour only); the weight display tops the machine
     cab.group.traverse(o=>{if(o.userData.slot)o.visible=false;});
-    const rack=new THREE.Group();rack.position.set(0,.5,.425);rack.scale.setScalar(.72);cab.group.add(rack);
-    box(1.0,.78,.02,blackPl,0,0,-.01,rack);for(const [sx,sy,px,py] of [[1.0,.02,0,.39],[1.0,.02,0,-.39]])box(sx,sy,.03,brass,px,py,0,rack);
+    // D-068: the sockets lie on the control deck, facing up toward the player (the joystick and buttons are removed)
+    for(const o of cab.panel.children.slice(1))o.visible=false;
+    const rack=new THREE.Group();rack.position.set(0,.028,.01);rack.rotation.x=-PI/2;rack.scale.setScalar(.58);cab.panel.add(rack);
     const ROLES=['brand','selection','environment'];const SOCK={};
     const icon=(role)=>canvasTex(128,128,(g,w,h)=>{g.clearRect(0,0,w,h);g.fillStyle='#fff';g.strokeStyle='#fff';g.lineWidth=8;if(role==='brand'){const P=starPts(64,64,46,20);g.beginPath();g.moveTo(...P[0]);for(const p of P.slice(1))g.lineTo(...p);g.closePath();g.fill();}else if(role==='selection'){g.beginPath();g.moveTo(34,24);g.lineTo(100,64);g.lineTo(34,104);g.closePath();g.fill();}else{g.beginPath();g.moveTo(10,104);g.lineTo(48,40);g.lineTo(70,74);g.lineTo(86,52);g.lineTo(118,104);g.closePath();g.fill();}},{srgb:false});
     ROLES.forEach((role,i)=>{const x=(i-1)*.3;const sg=new THREE.Group();sg.position.set(x,.04,.02);rack.add(sg);
@@ -2379,18 +2431,18 @@ const AZ=(()=>{
     const wp=weightPanel(1,.5);wp.mesh.position.set(0,2.04,.3);cab.group.add(wp.mesh);box(.04,.16,.04,brass,0,1.93,.3,cab.group);
     // cartridges: swatch on the front, HEX on the back (readable when inspected), no role name
     const carts=AC.CARTRIDGES;const tableX=-14.2,tableZ=-14.9;
-    {const t=new THREE.Group();t.position.set(tableX,0,tableZ);scene.add(t);box(1.5,.06,.7,wood,0,.78,0,t);for(const [x,z] of [[-.68,-.3],[.68,-.3],[-.68,.3],[.68,.3]])box(.06,.78,.06,woodDark,x,.39,z,t);addCollider(tableX,tableZ,1.55,.75,'az-table1');}
+    {const t=new THREE.Group();t.position.set(tableX,0,tableZ);scene.add(t);box(1.8,.06,.9,wood,0,.78,0,t);for(const [x,z] of [[-.83,-.4],[.83,-.4],[-.83,.4],[.83,.4]])box(.06,.78,.06,woodDark,x,.39,z,t);addCollider(tableX,tableZ,1.85,.95,'az-table1');}
     carts.forEach((hex,i)=>{const id='cart'+i;mkObj(id,inner=>{
         const front=canvasTex(256,340,(g,w,h)=>{g.fillStyle='#1b1a20';g.fillRect(0,0,w,h);g.fillStyle=hex;g.fillRect(24,24,w-48,h-110);g.strokeStyle='#e9e2cf';g.lineWidth=6;g.strokeRect(24,24,w-48,h-110);for(let k=0;k<5;k++){g.fillStyle='#c8a85a';g.fillRect(36+k*40,h-70,26,40);}});
         const back=canvasTex(256,340,(g,w,h)=>{g.fillStyle='#1b1a20';g.fillRect(0,0,w,h);g.fillStyle='#f2ecdc';g.fillRect(20,90,w-40,150);g.fillStyle='#111';g.font='900 46px "Arial Black",Arial';g.textAlign='center';g.textBaseline='middle';g.direction='ltr';g.fillText(hex.toUpperCase(),w/2,165);});
         const side=new THREE.MeshStandardMaterial({color:0x1b1a20,roughness:.5});
         const m=new THREE.Mesh(new THREE.BoxGeometry(.14,.186,.026),[side,side,side,side,new THREE.MeshStandardMaterial({map:front,roughness:.5}),new THREE.MeshStandardMaterial({map:back,roughness:.5})]);m.position.y=.093;inner.add(m);return{hex,mesh:m};},
-      {home:V3(tableX-.6+i*.3,.81,tableZ+.05),homeQ:new THREE.Quaternion().setFromEuler(new THREE.Euler(-PI/2+.25,0,0)),scale:2.1,light:.25,tray:'מחסנית '+'אבגדה'[i],q0:new THREE.Quaternion().setFromEuler(new THREE.Euler(0,.25,0)),innerY:-.093});});
+      {home:V3(tableX-.66+(i%5)*.33,.81,tableZ-.27+Math.floor(i/5)*.27),homeQ:new THREE.Quaternion().setFromEuler(new THREE.Euler(-PI/2+.25,0,0)),scale:2.1,light:.25,tray:'מחסנית '+(i+1),q0:new THREE.Quaternion().setFromEuler(new THREE.Euler(0,.25,0)),innerY:-.093});});
     function socket(role){
       if(A.busy)return;if(A.s1.slots[role]){toast('מותקן.');return;}
       const id=held('cart');if(!id){if(state.held){toast('לא מתאים כאן.');AUDIO.play('locked');}else toast('שדה ריק.');return;}
       const S=SOCK[role];cab.group.updateMatrixWorld();const pos=S.anchor.getWorldPosition(V3()),q=S.anchor.getWorldQuaternion(new THREE.Quaternion());
-      fromTrayTo(id,pos.add(V3(0,-.093,0)),q,()=>{AUDIO.play('place');
+      fromTrayTo(id,pos.add(V3(0,-.093,0).applyQuaternion(q)),q,()=>{AUDIO.play('place');
         if(OBJ[id].hex===AC.COLORS[role]){A.s1.slots[role]=id;A.where[id]='locked';OBJ[id].outer.userData.interact={label:'מותקן',action:()=>toast('מותקן.')};S.im.color.set(2.2,2.2,2.2);S.led.material.color.set('#3dff7a').multiplyScalar(2.4);AUDIO.play('connect');draw();check();saveNow();}
         else{ // wrong: short message, no success light, the cartridge goes back to the table
           AUDIO.play('nope');toast(AC.S1_WRONG);S.led.material.color.set('#ff3030').multiplyScalar(2.0);
@@ -2404,12 +2456,12 @@ const AZ=(()=>{
       later(.4,()=>{setCabState(cab,'on');cab.smat.emissiveMap=scr;cab.smat.emissiveIntensity=1.3;cab.mqMat.emissiveIntensity=1.3;AUDIO.play('right');wp.show();setObjective();});}
     function reset(){for(const r of ROLES){A.s1.slots[r]=null;SOCK[r].im.color.set(.25,.25,.25);SOCK[r].led.material.color.set('#552222');}A.s1.solved=false;setCabState(cab,'off');cab.smat.emissiveMap=scr;cab.smat.emissiveIntensity=1.1;cab.mqMat.emissiveIntensity=1.0;wp.reset();carts.forEach((h,i)=>{const id='cart'+i;placeHome(id);OBJ[id].outer.userData.interact={label:AC.LABELS.inspect,action:()=>pickup(id)};});draw();}
     draw();
-    {const g=new THREE.Group();g.position.set(-16.6,0,-14.2);g.rotation.y=PI/2+.5;scene.add(g);box(.05,1.2,.05,brass,0,.6,0,g);const p=numPlate(1,AC.S1_SIGN,.92,.34);p.position.set(0,1.38,.03);g.add(p);box(.96,.38,.03,woodDark,0,1.38,0,g);}
+    {const g=new THREE.Group();g.position.set(-16.6,0,-14.2);g.rotation.y=PI/2+.5;scene.add(g);box(.05,1.2,.05,brass,0,.6,0,g);const p=numPlate(1,AC.S1_SIGN,.92,.2);p.position.set(0,1.38,.03);g.add(p);box(.96,.24,.03,woodDark,0,1.38,0,g);}
     // D-051: only correct cartridges are kept in a socket, as in socket()
     function restore(slots){
       for(const role of ROLES){const id=slots&&slots[role];if(!id||!OBJ[id]||OBJ[id].hex!==AC.COLORS[role])continue;
         const S=SOCK[role],o=OBJ[id];cab.group.updateMatrixWorld();if(o.outer.parent!==scene)scene.attach(o.outer);
-        o.outer.position.copy(S.anchor.getWorldPosition(V3()).add(V3(0,-.093,0)));o.outer.quaternion.copy(S.anchor.getWorldQuaternion(new THREE.Quaternion()));o.outer.scale.setScalar(1);o.inner.position.y=0;o.outer.visible=true;
+        {const q=S.anchor.getWorldQuaternion(new THREE.Quaternion());o.outer.position.copy(S.anchor.getWorldPosition(V3()).add(V3(0,-.093,0).applyQuaternion(q)));o.outer.quaternion.copy(q);}o.outer.scale.setScalar(1);o.inner.position.y=0;o.outer.visible=true;
         A.s1.slots[role]=id;A.where[id]='locked';o.outer.userData.interact={label:'מותקן',action:()=>toast('מותקן.')};S.im.color.set(2.2,2.2,2.2);S.led.material.color.set('#3dff7a').multiplyScalar(2.4);}
       draw();
       if(ROLES.every(r=>A.s1.slots[r])){A.s1.solved=true;setCabState(cab,'on');cab.smat.emissiveMap=scr;cab.smat.emissiveIntensity=1.3;cab.mqMat.emissiveIntensity=1.3;wp.show();}
@@ -2446,7 +2498,7 @@ const AZ=(()=>{
     const btn=new THREE.Mesh(new THREE.CylinderGeometry(.032,.032,.03,20),new THREE.MeshStandardMaterial({color:0xb22222,roughness:.3,emissive:0x440000,emissiveIntensity:.6}));btn.rotation.x=PI/2;btn.position.set(.45,.14,.19);rg.add(btn);
     {const bl=plane(textPlate('כיוון תחנה',{w:320,h:80,fs:52}),.16,.045);bl.position.set(.45,.07,.172);rg.add(bl);markNoRay(bl);}
     btn.userData.interact={get label(){return A.s2.solved?'נקלט':'כיוון תחנה';},action:()=>tune()};
-    {const p=numPlate(2,[R.SIGN],.9,.24);p.position.set(0,.66,.02);p.rotation.x=-.25;rg.add(p);box(.94,.26,.02,woodDark,0,.66,.008,rg).rotation.x=-.25;}
+    {const p=numPlate(2,[],.9,.24);   /* D-069: the title only */p.position.set(0,.66,.02);p.rotation.x=-.25;rg.add(p);box(.94,.26,.02,woodDark,0,.66,.008,rg).rotation.x=-.25;}
     function turn(i){if(A.s2.solved||state.mode!=='play')return;A.s2.idx[i]=(A.s2.idx[i]+1)%R.DIALS[i].opts.length;drawWin(i);AUDIO.play('ratchet');knobs[i].rotation.z-=PI/3;}
     function tune(){if(A.s2.solved||state.mode!=='play')return;tween(.2,p=>{btn.position.z=.19-Math.sin(p*PI)*.012;});
       const ok=R.DIALS.every((d,i)=>d.opts[A.s2.idx[i]]===R.TARGET[i]);
@@ -2489,7 +2541,7 @@ const AZ=(()=>{
     // the lid (hinged at the back) carries the station text on its inside, read while it is open
     const lidP=new THREE.Group();lidP.position.set(0,.31,-.22);crate.add(lidP);
     const lid=box(.86,.02,.46,card,0,0,.22,lidP);
-    {const p=numPlate(3,P.SIGN,.8,.4);p.rotation.x=PI/2;p.position.set(0,-.012,.22);lidP.add(p);}
+    {const p=numPlate(3,[],.8,.22);   /* D-069: the title only */p.rotation.x=PI/2;p.position.set(0,-.012,.22);lidP.add(p);}
     const LID_OPEN=-1.95;lidP.rotation.x=LID_OPEN;
     // the handle that closes the lid
     const hnd=new THREE.Group();hnd.position.set(.47,.18,0);crate.add(hnd);box(.03,.03,.03,steel,0,0,0,hnd);const arm=box(.02,.16,.02,steel,.02,.08,0,hnd);const kb=new THREE.Mesh(new THREE.SphereGeometry(.03,12,10),new THREE.MeshStandardMaterial({color:0xb22222,roughness:.3}));kb.position.set(.02,.17,0);hnd.add(kb);hnd.rotation.z=-.5;
@@ -2499,7 +2551,8 @@ const AZ=(()=>{
     const boxMat=name=>{const t=canvasTex(256,192,(g,w,h)=>{g.fillStyle='#b98f5c';g.fillRect(0,0,w,h);noise(g,w,h,1500,.12,name.length);g.fillStyle='#f3ead6';g.fillRect(14,58,w-28,78);g.strokeStyle='#5a3a18';g.lineWidth=3;g.strokeRect(14,58,w-28,78);
         g.fillStyle='#1d1408';g.direction='ltr';g.textAlign='center';g.textBaseline='middle';let fs=46;do{g.font=`800 ${fs}px Arial,"Segoe UI",sans-serif`;fs-=2;}while(g.measureText(name).width>w-40);g.fillText(name,w/2,98);
         g.strokeStyle='rgba(90,60,24,.5)';g.lineWidth=6;g.beginPath();g.moveTo(w/2,0);g.lineTo(w/2,52);g.stroke();});return new THREE.MeshStandardMaterial({map:t,roughness:.85});};
-    const SPOTS=[V3(-10.85,.83,-22.35),V3(-10.85,.33,-22.35),V3(-17.75,.005,-21.7),V3(-16.95,.93,-23.38),V3(-16.25,1.38,-23.38)];   // cart top, cart bottom, under the open table, wall shelf ×2
+    const SPOTS=[V3(-10.85,.83,-22.35),V3(-10.85,.33,-22.35),V3(-17.75,.005,-21.7),V3(-16.95,.93,-23.38),V3(-16.25,1.38,-23.38),
+      V3(-15.95,.93,-23.38),V3(-12.2,.005,-21.5),V3(-17.25,1.38,-23.38),V3(-15.5,.005,-19.8),V3(-9.4,.005,-16.3)];   // D-068: shelf, floor by the bench, shelf, floor mid-room, floor by the east wall   // cart top, cart bottom, under the open table, wall shelf ×2
     // the cart and the wall shelf they sit on
     {const c=new THREE.Group();c.position.set(-10.85,0,-22.35);scene.add(c);box(.6,.03,.42,steel,0,.8,0,c);box(.6,.03,.42,steel,0,.3,0,c);for(const [x,z] of [[-.28,-.19],[.28,-.19],[-.28,.19],[.28,.19]])box(.025,.8,.025,steel,x,.4,z,c);addCollider(-10.85,-22.35,.65,.47,'az-cart');}
     {const s=new THREE.Group();s.position.set(-16.6,0,Z0+.2);scene.add(s);for(const y of [.9,1.35])box(1.5,.03,.3,woodDark,0,y,0,s);for(const x of [-.72,.72])box(.03,1.5,.3,woodDark,x,.75,0,s);addCollider(-16.6,Z0+.2,1.55,.35,'az-wallshelf');pLight(0xffe2b8,1.6,2.6,-16.6,1.9,Z0+.9);}
@@ -2507,6 +2560,46 @@ const AZ=(()=>{
     {const t=new THREE.Group();t.position.set(-17.8,0,-21.9);scene.add(t);box(1.2,.06,.8,wood,0,.78,0,t);for(const [x,z] of [[-.55,-.35],[.55,-.35],[-.55,.35],[.55,.35]])box(.05,.78,.05,woodDark,x,.39,z,t);addCollider(-17.8,-21.9,1.25,.85,'az-opentable');
       }
     pLight(0xffe2b8,1.4,2.4,-17.75,.9,-21.0);
+    /* D-068: museum pieces scattered in the prop store (decor only, not part of any station) */
+    {const marble=new THREE.MeshStandardMaterial({color:0xe6e1d6,roughness:.45}),plinthM=new THREE.MeshStandardMaterial({color:0x2a2622,roughness:.6});
+     const lathe=(pts,mat,seg=28)=>new THREE.Mesh(new THREE.LatheGeometry(pts.map(([r,y])=>new THREE.Vector2(r,y)),seg),mat);
+     const piece=(x,z,label,msg,sx=.55,sz=.55)=>{const g=new THREE.Group();g.position.set(x,0,z);scene.add(g);addCollider(x,z,sx,sz,'az-museum');g.userData.interact={label,action:()=>toast(msg)};return g;};
+     // a Greek marble figure on a plinth
+     {const g=piece(-9.8,-13.4,'פסל שיש','פסל יווני. כנראה מגבס.');box(.5,.9,.5,plinthM,0,.45,0,g);
+      const b=lathe([[0,0],[.16,0],[.15,.25],[.12,.5],[.17,.72],[.15,.86],[.07,.92],[0,.95]],marble);b.position.y=.9;g.add(b);
+      const h=new THREE.Mesh(new THREE.SphereGeometry(.075,16,12),marble);h.position.y=1.93;g.add(h);
+      const a=new THREE.Mesh(new THREE.CylinderGeometry(.03,.035,.42,10),marble);a.position.set(.17,1.62,0);a.rotation.z=-.5;g.add(a);
+      const d=lathe([[0,0],[.2,0],[.19,.06],[0,.07]],marble);d.position.y=.9;g.add(d);}
+     // a Renaissance-style portrait on the west wall (procedural, not a copy of any painting)
+     {const tex=canvasTex(300,400,(c,w,h)=>{const sky=c.createLinearGradient(0,0,0,h*.6);sky.addColorStop(0,'#5d6b5a');sky.addColorStop(1,'#a99b6e');c.fillStyle=sky;c.fillRect(0,0,w,h);
+        c.fillStyle='#4a5236';c.beginPath();c.moveTo(0,h*.55);for(let x=0;x<=w;x+=20)c.lineTo(x,h*.5+Math.sin(x*.04)*14);c.lineTo(w,h);c.lineTo(0,h);c.fill();
+        c.fillStyle='#2b1d14';c.beginPath();c.ellipse(w/2,h*.86,w*.42,h*.3,0,Math.PI,0);c.fill();
+        c.fillStyle='#1c130d';c.beginPath();c.ellipse(w/2,h*.36,w*.2,h*.2,0,0,6.283);c.fill();
+        c.fillStyle='#d6b48c';c.beginPath();c.ellipse(w/2,h*.38,w*.13,h*.12,0,0,6.283);c.fill();c.fillRect(w/2-16,h*.47,32,40);
+        c.fillStyle='rgba(40,25,10,.35)';for(let i=0;i<900;i++)c.fillRect(Math.random()*w,Math.random()*h,2,2);});
+      const g=new THREE.Group();g.position.set(-19.56,2.0,-18.4);g.rotation.y=PI/2;scene.add(g);
+      const gold=new THREE.MeshStandardMaterial({color:0xb08a3c,roughness:.35,metalness:.8});box(.92,1.18,.05,gold,0,0,0,g);
+      const p=new THREE.Mesh(new THREE.PlaneGeometry(.78,1.04),new THREE.MeshStandardMaterial({map:tex,roughness:.8}));p.position.z=.03;g.add(p);
+      p.userData.interact={label:'ציור',action:()=>toast('דיוקן בסגנון הרנסנס. החתימה מחוקה.')};}
+     // a Rubik cube on a pedestal
+     {const g=piece(-10.8,-19.8,'קובייה הונגרית','קובייה הונגרית. מישהו פתר צד אחד ונשבר.',.45,.45);box(.4,.95,.4,plinthM,0,.475,0,g);
+      const cols=[0xffffff,0xffd500,0xc41e3a,0xff5800,0x0051ba,0x009e60];for(let i=0;i<27;i++){const x=i%3-1,y=Math.floor(i/3)%3-1,z=Math.floor(i/9)-1;
+        const m=new THREE.Mesh(new THREE.BoxGeometry(.038,.038,.038),new THREE.MeshStandardMaterial({color:cols[(i*7+3)%6],roughness:.4}));m.position.set(x*.042,1.03+y*.042,z*.042);g.add(m);}
+      g.children[g.children.length-1].parent.rotation.y=.5;}
+     // a Greek amphora on a low plinth
+     {const g=piece(-11.2,-14.0,'אמפורה','אמפורה. בפנים יש רק אבק.',.45,.45);box(.4,.35,.4,plinthM,0,.175,0,g);
+      const tex=canvasTex(256,128,(c,w,h)=>{c.fillStyle='#b5582c';c.fillRect(0,0,w,h);c.fillStyle='#1a1210';c.fillRect(0,h*.38,w,h*.3);c.fillStyle='#b5582c';for(let x=0;x<w;x+=32){c.fillRect(x+6,h*.44,14,h*.18);}});
+      const am=lathe([[0,0],[.08,0],[.09,.05],[.17,.22],[.19,.36],[.15,.5],[.07,.6],[.06,.7],[.09,.73],[0,.74]],new THREE.MeshStandardMaterial({map:tex,roughness:.7}));am.position.y=.35;g.add(am);}
+     // a globe on a stand
+     {const g=piece(-19.0,-18.4,'גלובוס','גלובוס ישן. חלק מהגבולות כבר לא קיימים.',.5,.5);
+      const tex=canvasTex(256,128,(c,w,h)=>{c.fillStyle='#2f5f7a';c.fillRect(0,0,w,h);c.fillStyle='#c9b27a';for(const [x,y,rx,ry] of [[50,40,26,18],[70,85,14,22],[135,45,30,20],[150,90,12,18],[210,60,22,14]]){c.beginPath();c.ellipse(x,y,rx,ry,.4,0,6.283);c.fill();}});
+      box(.04,.9,.04,MAT.steel,0,.45,0,g);const sp=new THREE.Mesh(new THREE.SphereGeometry(.22,24,16),new THREE.MeshStandardMaterial({map:tex,roughness:.5}));sp.position.y=1.05;sp.rotation.z=.4;g.add(sp);
+      const ring=new THREE.Mesh(new THREE.TorusGeometry(.25,.008,6,40),MAT.steel);ring.position.y=1.05;ring.rotation.set(0,PI/2,.4);g.add(ring);box(.3,.03,.3,plinthM,0,.015,0,g);}
+     // a marble bust
+     {const g=piece(-15.5,-16.6,'פסל ראש','פסל ראש של פילוסוף. האף נשבר מזמן.',.45,.45);box(.4,1.1,.4,plinthM,0,.55,0,g);
+      const sh=lathe([[0,0],[.12,0],[.16,.06],[.14,.16],[.06,.2],[0,.21]],marble);sh.position.y=1.1;g.add(sh);
+      const hd=new THREE.Mesh(new THREE.SphereGeometry(.09,16,12),marble);hd.scale.set(.9,1.15,1);hd.position.y=1.42;g.add(hd);}
+    }
     P.BOXES.forEach((name,i)=>{const id='box_'+name;const m=boxMat(name),side=m;
       mkObj(id,inner=>{const mesh=new THREE.Mesh(new THREE.BoxGeometry(.2,.15,.2),[side,side,side,new THREE.MeshStandardMaterial({color:0x9c7646,roughness:.9}),side,side]);mesh.position.y=.065;inner.add(mesh);const hit=new THREE.Mesh(new THREE.BoxGeometry(.42,.34,.42),new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false}));hit.position.y=.1;inner.add(hit);return{name,mesh,hit};},
         {home:SPOTS[P.SPOT_OF[name]],homeQ:new THREE.Quaternion().setFromEuler(new THREE.Euler(0,(i%2?.3:-.25),0)),scale:2.4,light:.3,tray:name,q0:new THREE.Quaternion().setFromEuler(new THREE.Euler(.35,-.5,0)),innerY:-.065});
@@ -2563,7 +2656,7 @@ const AZ=(()=>{
     const lp=new THREE.Mesh(new THREE.PlaneGeometry(.5,.215),new THREE.MeshStandardMaterial({color:0,emissive:0xffffff,emissiveMap:lockTex,emissiveIntensity:1}));lp.position.set(0,.3,.305);g.add(lp);box(.54,.25,.02,brass,0,.3,.296,g);
     lp.userData.interact={label:'מנעול הארגז',action:()=>openChestLock()};g.userData.interact={label:'ארגז הפרסים',action:()=>openChestLock()};
     {const ht=canvasTex(640,140,(c,w,h)=>{c.fillStyle='#ece3cc';c.fillRect(0,0,w,h);c.strokeStyle='#5b3d1d';c.lineWidth=6;c.strokeRect(6,6,w-12,h-12);c.fillStyle='#2a1c10';c.direction='rtl';c.textAlign='center';c.textBaseline='middle';c.font='700 70px "Karantina","Heebo",Arial';c.fillText(AC.CHEST_HINT,w/2,h/2+4);});
-     const hp=plane(ht,.6,.13);hp.rotation.x=-PI/2;hp.position.set(0,.142,.3);lidP.add(hp);markNoRay(hp);
+     const hp=plane(ht,.6,.13);hp.rotation.x=-PI/2;hp.position.set(0,.142,.3);lidP.add(hp);markNoRay(hp);hp.visible=false;   // D-069: no written hint until a hint is asked for
      // a token emblem on the front
      const et=canvasTex(160,160,(c,w,h)=>{const gr=c.createRadialGradient(80,80,8,80,80,78);gr.addColorStop(0,'#ffe08a');gr.addColorStop(1,'#b8862a');c.fillStyle=gr;c.beginPath();c.arc(80,80,76,0,6.28);c.fill();c.strokeStyle='#7a5410';c.lineWidth=6;c.beginPath();c.arc(80,80,64,0,6.28);c.stroke();c.fillStyle='#7a5410';c.font='900 70px Arial';c.textAlign='center';c.textBaseline='middle';c.fillText('★',80,84);});
      for(const x of [-.38,.38]){const e=plane(et,.12,.12);e.position.set(x,.3,.306);g.add(e);markNoRay(e);}
@@ -2808,7 +2901,7 @@ const AZ=(()=>{
       if((id.startsWith('cart')&&A.s1.solved)||(id.startsWith('box_')&&A.s3.solved))continue;   // spares went back when the station was solved
       A.where[id]='tray';o.outer.visible=false;}
   }
-  return{A,objective,reset,restore,hasObj:id=>!!OBJ[id],enterIfParam,ZONE_PARAM,clType,clDel,clSubmit,closeChestLock,missing,
+  return{A,objective,reset,restore,openDoor,openDoorNow,hasObj:id=>!!OBJ[id],enterIfParam,ZONE_PARAM,clType,clDel,clSubmit,closeChestLock,missing,
     test:{center:id=>{let m=null;OBJ[id].outer.traverse(x=>{if(!m&&x.isMesh)m=x;});return m.getWorldPosition(V3()).toArray();},state:()=>JSON.parse(JSON.stringify({s1:A.s1,s2:A.s2,s3:A.s3,chest:A.chest,cards:A.cards,door:A.doorOpen,tokens:state.tokens,where:A.where,busy:A.busy})),pos:id=>OBJ[id].outer.getWorldPosition(V3()).toArray(),
       obj:id=>OBJ[id],openDoor,openChestLock,radio:n=>S2.pos(n),pack:n=>S3.pos(n)}};
 })();
@@ -2882,6 +2975,7 @@ function updateTimer(dt){
 updaters.push(updateTimer);
 /* ===================== review mode (?review=1): one local link with every room, for reading the texts ===================== */
 const REVIEW=URLP.has('review');
+const CLAW_ZONE=URLP.get('zone')==='claw';   // D-068 (facilitator link): room 1 with the door open, 3 tokens, standing at the toy machine
 const REVIEW_SPOTS=[
   ['ארקייד',[['כניסה',0,6.8,0,1.4,4],['דלת חידה 1',0,-6.8,0,1.6,-10],['מכונת הצעצועים',-3.1,.25,-3.1,1.1,-1.7],['מסוף המצגת',-1.72,-.55,-1.72,.95,-1.55]]],
   ['חידה 1 · נקודות מבט',null],
@@ -2890,9 +2984,12 @@ const REVIEW_SPOTS=[
 ];
 function reviewGo(x,z,lx,ly,lz){player.pos.set(x,CONFIG.EYE,z);player.vel.set(0,0);const d=V3(lx,ly,lz).sub(player.pos);player.yaw=Math.atan2(-d.x,-d.z);player.pitch=Math.atan2(d.y,Math.hypot(d.x,d.z));if(state.mode==='claw')CLAW.exitMode();}
 function reviewHints(){const L={arcadeNext:'ארקייד · אחרי פתיחת הדלת',bayOut:'אולם הכד · לפני הכניסה לחדר הכד',bayNext:'אולם הכד · אחרי פתיחת חדר המטלות',assign0:'חדר המטלות · לפני שנגעו בעמדה',assign1:'עמדה 01 · צבעים',assign2:'עמדה 02 · רדיו',assign3:'עמדה 03 · אריזה',clawPlay:'מכונת הצעצועים · אחרי הכנסת אסימון',arcade:'ארקייד · חידה 1',next:'"המשיכו הלאה" (שלב בלי חידה פתוחה)',materials:'אולם הכד · לפני הפתרון',vaseOpen:'אולם הכד · הכד נפתח',key:'אולם הכד · אחרי איסוף המפתח',assign:'חדר המטלות · התחנות (רמז של תחנה נעלם כשהיא נפתרת)',chest:'חדר המטלות · אחרי שלוש התחנות',tokens:'חדר המטלות · אחרי האסימונים',claw:'ארקייד · מכונת הצעצועים',robot:'ארקייד · אחרי חילוץ צעצוע',done:'ארקייד · המצגת נמצאה'};
-  const order=['arcade','arcadeNext','bayOut','materials','vaseOpen','key','bayNext','assign0','assign1','assign2','assign3','chest','tokens','claw','clawPlay','robot'];
+  const order=['arcade','arcadeNext','bayOut','materials','bayNext','assign0','assign1','assign2','assign3','chest','tokens','claw','clawPlay','robot'];
   $('rv-hints-list').innerHTML=order.map(k=>`<h3>${L[k]||k}</h3><ol>${(CONFIG.HINT_SETS[k]||[]).map(h=>typeof h==='string'?`<li>${h}</li>`:`<li>${h.t}${h.s?` <span class="rv-s">(תחנה ${h.s})</span>`:''}</li>`).join('')}</ol>`).join('');
   $('rv-hints').hidden=false;}
+function clawZoneSetup(){if(!CLAW_ZONE)return;
+  DOOR.collider.active=false;DOOR.slab.userData.interact=null;DOOR.pivot.position.y=DOOR.LIFT;state.doorOpen=true;applyZoneLights(zoneKey());
+  state.tokens=3;renderTokens();player.pos.set(-3.1,CONFIG.EYE,-.05);player.yaw=0;player.pitch=-.2;player.vel.set(0,0);setObjective();}
 function reviewSetup(){
   // all doors open, without solving anything
   DOOR.collider.active=false;DOOR.slab.userData.interact=null;DOOR.pivot.position.y=DOOR.LIFT;state.doorOpen=true;
@@ -2943,7 +3040,7 @@ function resetGame(){
   backdrop.visible=false;backdrop.material.opacity=0;inspLight.intensity=inspFill.intensity=0;bloom.strength=.8;
   ['keypad','clock','clawui','pterm','cards','cardpop','hints','help','end','confirm','inspect-ui','inspect-top'].forEach(id=>$(id).hidden=true);
   $('hud').hidden=false;$('crosshair').hidden=false;$('tray').style.opacity=1;document.body.classList.remove('inspecting','dragging');
-  MZ.reset();AZ.reset();BACK.reset();CLAW.reset();RADAR.reset();if(REVIEW)later(.05,reviewSetup);TM.ext=0;TM.paused=0;timerSec=-1;AUDIO.win=false;AUDIO.tension=false;AUDIO.duck(false);MZ.enterIfParam();AZ.enterIfParam();lastZone='';renderTokens();renderCards();
+  MZ.reset();AZ.reset();BACK.reset();CLAW.reset();RADAR.reset();if(REVIEW)later(.05,reviewSetup);TM.ext=0;TM.paused=0;timerSec=-1;AUDIO.win=false;AUDIO.tension=false;AUDIO.duck(false);MZ.enterIfParam();AZ.enterIfParam();clawZoneSetup();lastZone='';renderTokens();renderCards();
   renderTray();renderHints();setObjective();renderCode();$('btn-hint').classList.remove('has-new');
   toast('מתחילים מחדש.');
   saveClear();if(SAVE_ALLOWED){SAVE.startedAt=Date.now();SAVE.on=true;saveNow();}
@@ -3039,7 +3136,7 @@ addEventListener('keydown',e=>{
   keys.add(k);tapped.add(k);
   if(k==='KeyE'&&!e.repeat)interact(centerTarget);
   if(k==='KeyH'&&!e.repeat)toggleHints();
-  if(/^Digit[1-9]$/.test(k)){const p=state.collected[+k.slice(-1)-1];if(p)openInspect(p,false);}
+  if(/^Digit[1-9]$/.test(k)){const p=trayIds()[+k.slice(-1)-1];if(p)openInspect(p,false);}
 });
 addEventListener('keyup',e=>keys.delete(e.code));
 addEventListener('blur',()=>keys.clear());
@@ -3051,11 +3148,11 @@ function toggleHints(){const show=$('hints').hidden;showCard('help',false);showC
 $('start-min').textContent=CONFIG.TIMER.MINUTES;
 if(REVIEW){$('start').querySelector('.kicker').textContent='מצב סקירה · כל החדרים פתוחים · בלי שעון';}
 // D-051: facilitator links (review / zone) never save and never offer to continue, so they cannot overwrite a player's save
-const SAVE_ALLOWED=!REVIEW&&!MZ.ZONE_PARAM&&!AZ.ZONE_PARAM;
+const SAVE_ALLOWED=!REVIEW&&!MZ.ZONE_PARAM&&!AZ.ZONE_PARAM&&!CLAW_ZONE;
 $('btn-start').onclick=()=>{
   AUDIO.start();$('start').hidden=true;$('hud').hidden=false;$('crosshair').hidden=false;state.mode='play';state.startTime=clock;
   if(SAVE_ALLOWED){saveClear();SAVE.pending=null;SAVE.startedAt=Date.now();SAVE.on=true;}
-  MZ.enterIfParam();AZ.enterIfParam();lastZone='';if(REVIEW)reviewSetup();
+  MZ.enterIfParam();AZ.enterIfParam();clawZoneSetup();lastZone='';if(REVIEW)reviewSetup();
   renderTray();setObjective();renderHints();renderCode();syncMute();if(!REVIEW)requestLock();canvas.focus();
   setTimeout(()=>tip('intro','<kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> לתנועה · עכבר להסתכלות · התקדמו לתוך האולם',6000),600);
   setTimeout(updateResume,400);
@@ -3177,9 +3274,24 @@ function frame(now){
   for(const u of updaters)u(dt,clock);
   {const z=zoneKey();if(z!==lastZone){lastZone=z;AUDIO.setZone(z);setObjective();if(!$('hints').hidden)renderHints();renderer.shadowMap.autoUpdate=z==='materials';renderer.shadowMap.needsUpdate=true;applyZoneLights(z);}}
   if(state.mode==='play'&&!state.doorOpen&&pairCount()===4&&!state.tips.door)tip('door','השלט שמעל הדלת מחכה. המנעול נמצא על הדלת עצמה.',5000);
-  composer.render(dt);
+  if(GFX.low)renderer.render(scene,camera);else composer.render(dt);
 }
 function loop(now){frame(now);requestAnimationFrame(loop);}
+/* D-069: graphics quality. "Light" = pixel ratio 1, no bloom pass, no shadows. Chosen by the button (remembered on this
+   computer), or once automatically when the first seconds of play run below GFX.MIN_FPS. */
+const GFX={low:false,auto:true,MIN_FPS:32,probe:0,probeN:0,probeT:0,decided:false};
+function setGfx(low,why){if(GFX.low===low)return;GFX.low=low;
+  renderer.setPixelRatio(low?1:Math.min(devicePixelRatio,1.5));renderer.setSize(innerWidth,innerHeight,false);composer.setSize(innerWidth,innerHeight);
+  renderer.shadowMap.enabled=!low;scene.traverse(o=>{const m=o.material;if(!m)return;(Array.isArray(m)?m:[m]).forEach(x=>x.needsUpdate=true);});renderer.shadowMap.needsUpdate=true;
+  const b=$('btn-gfx');b.textContent=low?'גרפיקה: קלה':'גרפיקה: רגילה';b.setAttribute('aria-pressed',low?'true':'false');
+  if(why==='user'){GFX.auto=false;try{localStorage.setItem('arcade.gfx',low?'low':'high');}catch(e){}}
+  if(why==='auto')toast('המשחק עבר לגרפיקה קלה כדי לזרום יותר. אפשר לשנות בכפתור "גרפיקה".');}
+try{const v=localStorage.getItem('arcade.gfx');if(v){GFX.auto=false;if(v==='low')setGfx(true);}}catch(e){}
+if(URLP.has('test'))GFX.auto=false;   // automation runs in hidden panes, where frame rates mean nothing
+$('btn-gfx').onclick=()=>{setGfx(!GFX.low,'user');$('btn-gfx').blur();canvas.focus();};
+updaters.push(dt=>{if(!GFX.auto||GFX.decided||state.mode!=='play'||document.hidden)return;GFX.probeT+=dt;if(GFX.probeT<2)return;   // skip the first 2 s (shader warm-up)
+  GFX.probe+=dt;GFX.probeN++;if(GFX.probe<5)return;GFX.decided=true;const f=GFX.probeN/GFX.probe;if(f<GFX.MIN_FPS)setGfx(true,'auto');});
+
 addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight,false);composer.setSize(innerWidth,innerHeight);bloom.setSize(innerWidth,innerHeight);});
 
 buildRayList();
