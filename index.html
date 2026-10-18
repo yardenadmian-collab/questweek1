@@ -499,6 +499,7 @@ const CONFIG = {
     S1_SIGN: [],   // רק "מטלה 01": בלי רמזים כתובים במרחב עד שמבקשים רמז (D-068)
     S1_WRONG: 'לא מתאים לשדה הזה.',
     CHEST_HINT: 'שלוש מטלות. שלושה משקלים.',
+    DOOR_HINTS: ['שלוש אותיות פותחות את הדלת. הכד יודע אילו.', 'את התשובות תמצאו במודל, בחלק ההעשרה.', 'בכל טבעת בכד: האות הראשונה בשם של כלי.'],   // D-084: לחיצה על לוח האותיות בדלת חדר המטלות, רמז אחד לכל לחיצה
     TOKENS_MSG: 'נאספו 3 אסימונים. מכונת הצעצועים בחדר הראשון מחכה להם.',
     // תפאורה (D-047): פרקים אמיתיים מדף הסדרה בכאן (project/learning/podcast-episodes.md). נבחנים כמו כל חפץ, ואינם חלק מהעמדות
     DECOR: { bg: 'דוד בן גוריון', wright: 'האחים רייט', kontiki: 'רפסודת הקון-טיקי', crown: 'הבלש ארכימדס ותעלומת כתר המלך', tea: 'מסיבת התה של בוסטון',
@@ -2085,7 +2086,12 @@ const MZ=(()=>{
   const pink=[stitch([P3(.4,.1,-23.75),P3(1.35,.1,-23.75),P3(1.35,.1,-27.7),P3(-3.9,.1,-27.7),P3(-4.3,.03,-27.7),P3(-5.6,.03,-27.7),P3(-5.6,.03,-26.5),P3(-6.75,.03,-26.5)],PINK,{k:1.9,r:.02}),
               stitch([P3(-6.45,.03,-26.2),P3(-6.8,.03,-26.5),P3(-6.45,.03,-26.8)],PINK,{k:1.9,r:.02,dash:.08,gap:.04})];
   pink.forEach(m=>{m.userData.full=m.count;m.count=0;m.visible=false;m.frustumCulled=false;});   // bounds would be computed while still empty
-  function showPink(){pink.forEach(m=>{m.visible=true;m.count=0;});tween(reduceMotion?.2:1.8,p=>{pink[0].count=Math.floor(p*pink[0].userData.full);if(p>.85)pink[1].count=pink[1].userData.full;},()=>pink.forEach(m=>m.count=m.userData.full));}
+  /* D-084: a click on the assignments-door keypad flashes the pink stitch between the vase and the door, and the vase glows (only while the vase is locked) */
+  let pulseN=0;
+  function hintPulse(){if(S.solved)return;const n=++pulseN;pink.forEach(m=>{m.count=m.userData.full;m.visible=true;});
+    tween(reduceMotion?.6:2.4,p=>{if(n!==pulseN||S.solved)return;const on=reduceMotion?true:Math.sin(p*PI*6)>-.3;pink.forEach(m=>m.visible=on);vaseMat.emissiveIntensity=Math.sin(p*PI)*.7;},
+      ()=>{if(n!==pulseN||S.solved)return;pink.forEach(m=>{m.visible=false;m.count=0;});vaseMat.emissiveIntensity=0;});}
+  function showPink(){pulseN++;pink.forEach(m=>{m.visible=true;m.count=0;});tween(reduceMotion?.2:1.8,p=>{pink[0].count=Math.floor(p*pink[0].userData.full);if(p>.85)pink[1].count=pink[1].userData.full;},()=>pink.forEach(m=>m.count=m.userData.full));}
   // two dim arcade cabinets keep the bay tied to the arcade
   for(const [x,z,r] of [[-6.45,-30.2,PI/2],[6.45,-22.0,-PI/2]]){const cab=makeCabinet(x,z,r,{acc:'#7dff3a'});setCabState(cab,'dim');cab.room2=true;}
 
@@ -2287,7 +2293,7 @@ const MZ=(()=>{
   for(const c of colliders.slice(_c0)){c.minZ+=DZ;c.maxZ+=DZ;}
   KEY_HOME.z+=DZ;
   const wp=o=>o.getWorldPosition(V3()).toArray();
-  return{S,objective,reset,restore,enterIfParam,ZONE_PARAM,useKey,
+  return{S,objective,reset,restore,enterIfParam,ZONE_PARAM,useKey,hintPulse,
     test:{state:()=>({letters:S.idx.map(k=>LET[k]),solved:S.solved,keyTaken:S.keyTaken,keyUsed:S.keyUsed,busy:S.busy,wrong:S.wrong,checks:S.checks,spread:+SPREAD.value.toFixed(2),lid:+lidPivot.rotation.x.toFixed(2),
         windows:winMats.map(m=>'#'+m.color.getHexString()),ringsGreen:rings.map(r=>r.green),keyVisible:key.outer.visible,pink:pink[0].visible?pink[0].count+'/'+pink[0].userData.full:'hidden',code:{...state.code}}),
       pos:n=>{const m=/^(next|prev|ring|mark|clue)(\d)?$/.exec(n);if(n==='check')return wp(cap);if(n==='patch')return wp(patch);if(n==='key')return wp(key.outer);if(n==='plate')return wp(markPlate);
@@ -2357,7 +2363,8 @@ const AZ=(()=>{
     const kpMat=new THREE.MeshStandardMaterial({map:kt,emissive:0xffffff,emissiveMap:kt,emissiveIntensity:.7,roughness:.5});
     const kp=new THREE.Mesh(new THREE.PlaneGeometry(.36,.48),kpMat);kp.position.set(.07,1.38,.9);kp.rotation.y=PI/2;pivot.add(kp);
     box(.016,.52,.4,brass,.058,1.38,.9,pivot);
-    kp.userData.interact={label:'לוח אותיות',action:()=>{if(A.doorOpen){toast('הדלת פתוחה.');return;}toast('חסרות אותיות.');AUDIO.play('locked');}};
+    let kpClicks=0;   /* D-084: each click gives the next hint; the stitch and the vase flash every time */
+    kp.userData.interact={label:'לוח אותיות',action:()=>{if(A.doorOpen){toast('הדלת פתוחה.');return;}const H=CONFIG.ASSIGN.DOOR_HINTS;toast(H[Math.min(kpClicks++,H.length-1)]);AUDIO.play('locked');MZ.hintPulse();}};
     let shown=null;updaters.push((dt,t)=>{let solved=false;try{solved=MZ.S.solved;}catch(e){}const want=solved?CONFIG.MATERIALS.RINGS.SOLUTION:null;if(want!==shown){shown=want;drawKP(want);}
       kpMat.emissiveIntensity=A.doorOpen||solved?.6:.75+.3*Math.sin(t*1.8);
       doorGreen.color.lerp(solved?DOOR_PINK:DOOR_PLAIN,Math.min(1,dt*2));doorGreen.emissive.lerp(solved?DOOR_GLOW:DOOR_DARK,Math.min(1,dt*2));});   // D-075: the door turns pink with the vase
