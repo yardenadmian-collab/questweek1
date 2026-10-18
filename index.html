@@ -181,7 +181,7 @@ body.inspecting #c{cursor:grab} body.inspecting.dragging #c{cursor:grabbing}
   <div class="panel">
     <p class="kicker">פתיחת הקורס · קווסט · אבטיפוס</p>
     <h1 class="neon">ארקייד<br>הדברים האבודים</h1>
-    <p class="lede">לכאן מגיע כל מה שאבד. המרצה נעלה את המצגת שלה בקוד ושכחה אותו. החידות בארקייד יובילו אתכם אל הקוד. פתרו אותן, מצאו את הקוד ופתחו את המצגת. יש לכם <span id="start-min">25</span> דקות.</p>
+    <p class="lede">לכאן מגיע כל מה שאבד. המרצה נעלה את המצגת שלה בקוד ושכחה אותו. החידות בארקייד יובילו אתכם אל אסימונים, והאסימונים יובילו אל הקוד. פתרו אותן, מצאו את הקוד ופתחו את המצגת. יש לכם <span id="start-min">25</span> דקות.</p>
     <ul class="keys">
       <li><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> / חצים: תנועה</li>
       <li>עכבר: הסתכלות</li>
@@ -457,11 +457,11 @@ const CONFIG = {
       START: ['M', 'B', 'R'],                               // מצב הטבעות בתחילת המשחק (לא חלק מהפתרון)
       SOLUTION: 'TSA',                                      // 1 TRELLIS.2 · 2 Scenario · 3 Astra (המדריך "מרעיון לאובייקט ב־Unity", עמ' 7, 9, 14)
       CLUES: ['התמונה היא הפרומפט שלי', 'כמה מנועים, במקום אחד', 'אני עובד ישירות בתוך Unity'],   // גב הכד, בגובה טבעות 1/2/3
-      CLUE_MARK: 'אות הפתיחה של כל כלי',
+      CLUE_MARK: 'האות הראשונה בשם של כל כלי',   // 2026-10-18: נוסח ברור יותר אחרי הרצה בכיתה
       CHECK_LABEL: 'בדיקה', NEXT_LABEL: 'אות הבאה', PREV_LABEL: 'אות קודמת',
-      WRONG_MSG: 'הכד עדיין נעול. בדקו את הכלים ואת הסדר.',
+      WRONG_MSG: 'הכד עדיין נעול. בכל טבעת: האות הראשונה בשם הכלי המתאים.',
     },
-    PATCH_TEXT: ['הכד הזה אמור להיות מוכר לכם...'],   // מתחת לרקמה בגב הבמה (המרצה, 2026-10-14). שורה שנייה אופציונלית
+    PATCH_TEXT: ['הכד הזה אמור להיות מוכר לכם...', 'בקורס הזה תפתחו דברים ב־Unity באמצעות בינה מלאכותית.', 'מזל שיש לכם במודל העשרה עם הכלים לעשות את זה!'],   // מתחת לרקמה בגב הבמה (המרצה, 2026-10-14; שורות 2–3: המרצה אחרי הרצה בכיתה, 2026-10-18)
     KEY_MSG: 'נאסף מפתח',
     KEY_SYMBOL_COLOR: '#9bf25a',   // הסמל על ראש המפתח זהה לסמל שעל דלת חדר המטלות (drawKeySymbol)
     LABELS: { key: 'מפתח' },
@@ -472,9 +472,8 @@ const CONFIG = {
     // דוגמת Firewatch במצגת "הגשה מטלה 1" (שקף 7). ערכים לימודיים מהמצגת, לא מפרט רשמי של מפתחי המשחק
     COLORS: { brand: '#FFAD01', selection: '#FF9100', environment: '#122F41' },
     ROLE_NAMES: { brand: 'מותג', selection: 'בחירה', environment: 'סביבה' },
-    CARTRIDGES: ['#8DC63F', '#FFA500', '#122F41', '#F28AC0', '#FF9900',
-                 '#0A0A0A', '#1B3A4B', '#FFAD01', '#E83592', '#FFB000',
-                 '#6C7B3A', '#FF9100', '#F2F2F2', '#0F2A3D', '#FF8C00'],   // 15 על השולחן (D-068): 3 נכונות; 6 מצבעי המצגות של המרצה (ליים, ורודים, שחור, לבן־שבור, זית), למי שלא נכנס למטלה; 6 קרובות לנכונות (כתומים וכחול כהה)
+    CARTRIDGES: ['#8DC63F', '#122F41', '#F28AC0', '#0A0A0A', '#FFAD01',
+                 '#E83592', '#6C7B3A', '#FF9100', '#F2F2F2'],   // 9 על השולחן: 3 נכונות; 6 מצבעי המצגות של המרצה (ליים, ורודים, שחור, לבן־שבור, זית). D-082: המסיחות הקרובות (כתומים וכחול כהה) הוסרו
     // עמדה 02: קובץ מטלה 2 מפנה לפודקסט "היסטוריה לילדים" (אומת בקובץ המטלה המקומי)
     RADIO: {
       DIALS: [
@@ -500,7 +499,7 @@ const CONFIG = {
     S1_SIGN: [],   // רק "מטלה 01": בלי רמזים כתובים במרחב עד שמבקשים רמז (D-068)
     S1_WRONG: 'לא מתאים לשדה הזה.',
     CHEST_HINT: 'שלוש מטלות. שלושה משקלים.',
-    TOKENS_MSG: 'נאספו 3 אסימונים למכונת הצעצועים.',
+    TOKENS_MSG: 'נאספו 3 אסימונים. מכונת הצעצועים בחדר הראשון מחכה להם.',
     // תפאורה (D-047): פרקים אמיתיים מדף הסדרה בכאן (project/learning/podcast-episodes.md). נבחנים כמו כל חפץ, ואינם חלק מהעמדות
     DECOR: { bg: 'דוד בן גוריון', wright: 'האחים רייט', kontiki: 'רפסודת הקון-טיקי', crown: 'הבלש ארכימדס ותעלומת כתר המלך', tea: 'מסיבת התה של בוסטון',
       everest: "ג'ונקו טביי מטפסת לאוורסט", galileo: 'גלילאו - המדען שגילה את סודות הכוכבים', napoleon: 'נפולאון בונפרטה', bike: 'ההיסטוריה של האופניים', bone: 'ההיסטוריה של הדינוזאורים' },
@@ -1635,7 +1634,7 @@ function sanitizeSave(s){
   const pairs=[...new Set(arr(p1.pairs))].filter(p=>typeof p==='string'&&CONFIG.PAIRS[p]);
   const solved=!!p1.solved&&pairs.length===4;
   const mzSolved=solved&&!!mz.solved,keyTaken=mzSolved&&!!mz.keyTaken,door=keyTaken&&!!obj(az).door;
-  const ch=obj(az.chest),open=door&&!!ch.open,taken=open&&!!ch.taken;
+  const ch=obj(az.chest),open=door&&!!ch.open,wasTaken=open&&!!ch.taken,taken=open;   /* D-081: an open chest always counts as taken */
   const hints={};for(const [k,v] of Object.entries(obj(s.hints)))if(fin(v)&&v>=0)hints[k]=Math.min(10,v|0);
   const ROOMS=['arcade','materials','assign'];
   return{startedAt:s.startedAt,savedAt:s.savedAt,elapsed:s.elapsed,paused:fin(s.paused)&&s.paused>=0?s.paused:0,ext:clamp(s.ext|0,0,CONFIG.TIMER.EXTENSIONS),
@@ -1644,7 +1643,7 @@ function sanitizeSave(s){
     hints,tips:arr(s.tips).filter(k=>typeof k==='string'),
     mz:{idx:arr(mz.idx).length===3?mz.idx:null,solved:mzSolved,keyTaken,keyUsed:door,wrong:Math.max(0,mz.wrong|0),checks:Math.max(0,mz.checks|0)},
     az:{door,active:az.active|0,s1:{slots:door?obj(obj(az.s1).slots):{}},s2:door?obj(az.s2):{},s3:door?obj(az.s3):{},chest:{open,taken}},
-    tokens:taken?clamp(s.tokens|0,0,CONFIG.ASSIGN.TOKENS):0,
+    tokens:wasTaken?clamp(s.tokens|0,0,CONFIG.ASSIGN.TOKENS):(open?CONFIG.ASSIGN.TOKENS:0),
     claw:{active:taken&&!!claw.active,robot:taken&&['chute','tray'].includes(claw.robot)?claw.robot:'pile'},back:door&&!!s.back,
     tray:[...new Set(arr(s.tray))].filter(id=>typeof id==='string')};
 }
@@ -1727,7 +1726,7 @@ function setObjective(){
   else if(state.tokens>0)html=`<b>יש לכם אסימונים (${state.tokens}).</b> מכונת הצעצועים מחכה.`;
   else if(typeof AZ!=='undefined'&&AZ.A.chest.taken)html='<b>המסוף "המצגת של ירדן"</b> מחכה לקוד.';
   else if(state.doorOpen)html='<b>הדלת פתוחה.</b> עברו לחלל הבא.';
-  else if(n===0)html='<b>המשימה:</b> לפתוח את הדלת שבקצה האולם. השלט שמעליה התפרק.';
+  else if(n===0)html='<b>המשימה:</b> לאסוף אסימונים למכונת הצעצועים, וכך לחשוף את הקוד למצגת. לשם כך תצטרכו לשוטט בחלל, וקודם לפתוח את הדלת שבקצה האולם. השלט שמעליה התפרק.';   // 2026-10-18: המרצה, אחרי הרצה בכיתה
   else if(n<4)html=`<b>חלקי שלט:</b> ${n} מתוך 4. חפשו עוד שברים באולם.`;
   else html='<b>כל החלקים אצלכם.</b> גשו למנעול שעל הדלת.';
   $('objective').innerHTML=html;
@@ -1744,7 +1743,7 @@ function hintStage(){
   const z=zoneKey();
   if(z==='materials'){const inBay=Math.abs(player.pos.x)<3.95&&player.pos.z<-14.1;
     if(!MZ.S.solved)return inBay?'materials':'bayOut';return'bayNext';   /* D-069: the solved vase opens the door */}
-  if(z==='assign'){if(AZ.A.chest.taken)return'tokens';if(AZ.missing().length){const a=AZ.A.active;return a&&!AZ.A['s'+a].solved?'assign'+a:'assign0';}return'chest';}
+  if(z==='assign'){if(AZ.A.chest.open)return'tokens';if(AZ.missing().length){const a=AZ.A.active;return a&&!AZ.A['s'+a].solved?'assign'+a:'assign0';}return'chest';}
   if(!state.doorOpen)return'arcade';
   if(CLAW.solved)return'done';if(CLAW.robotOut)return'robot';if(AZ.A.chest.taken)return CLAW.active?'clawPlay':'claw';return'arcadeNext';
 }
@@ -2114,10 +2113,11 @@ const MZ=(()=>{
     g.restore();vasePath();g.lineWidth=5;g.strokeStyle='#2f6c0f';g.stroke();
     const rimY=base-1.70*sc;g.fillStyle='#86de44';g.beginPath();g.ellipse(cx,rimY,.29*sc,10,0,0,6.283);g.fill();g.strokeStyle='#2f6c0f';g.lineWidth=4;g.stroke();
     g.setLineDash([16,10]);g.strokeStyle='#a19d93';g.lineWidth=6;g.beginPath();g.moveTo(cx-130,base+14);g.lineTo(cx+130,base+14);g.stroke();g.setLineDash([]);
-    g.direction='rtl';g.textAlign='center';g.textBaseline='alphabetic';const [t1,t2]=MC.PATCH_TEXT;
+    g.direction='rtl';g.textAlign='center';g.textBaseline='alphabetic';const [t1,t2,t3]=MC.PATCH_TEXT;
     const fit=(txt,max,weight)=>{let fs=max;do{g.font=`${weight} ${fs}px "Karantina","Heebo",Arial`;fs-=2;}while(g.measureText(txt).width>w-90&&fs>30);};
-    g.fillStyle='#f1ebdc';fit(t1,96,800);g.fillText(t1,cx,py+ph+(t2?108:140));
-    if(t2){g.fillStyle='#9bf25a';fit(t2,66,700);g.fillText(t2,cx,py+ph+192);}
+    g.fillStyle='#f1ebdc';fit(t1,t3?78:96,800);g.fillText(t1,cx,py+ph+(t3?72:t2?108:140));
+    if(t2&&!t3){g.fillStyle='#9bf25a';fit(t2,66,700);g.fillText(t2,cx,py+ph+192);}
+    if(t3){g.fillStyle='#9bf25a';fit(t2,52,700);g.fillText(t2,cx,py+ph+136);fit(t3,52,700);g.fillText(t3,cx,py+ph+192);}
   });
   const patch=new THREE.Mesh(new THREE.PlaneGeometry(2.1,2.1*605/1400),new THREE.MeshStandardMaterial({map:patchTex,roughness:.95,emissive:0xffffff,emissiveMap:patchTex,emissiveIntensity:.14}));
   patch.position.set(VX,BACK_H/2,BACK_Z-.031);patch.rotation.y=PI;scene.add(patch);markNoRay(patch);
@@ -2178,7 +2178,7 @@ const MZ=(()=>{
     rings.push({grp,mat,h,R,btns,mk,clue:cm,green:false});
   });
   let markPlate;
-  {const h=1.315,R=rAt(h)+.045,L=.74,tl=L/R;const t=canvasTex(1120,140,(g,w,hh)=>{g.fillStyle='#231c2f';g.fillRect(0,0,w,hh);g.strokeStyle='#9bf25a';g.lineWidth=5;g.strokeRect(4,4,w-8,hh-8);g.direction='rtl';g.textAlign='center';g.textBaseline='middle';g.fillStyle='#d9ffc4';g.font='700 70px "Karantina","Heebo",Arial';g.fillText(RC.CLUE_MARK,w/2,hh/2+4);});
+  {const h=1.315,R=rAt(h)+.045,L=.74,tl=L/R;const t=canvasTex(1120,140,(g,w,hh)=>{g.fillStyle='#231c2f';g.fillRect(0,0,w,hh);g.strokeStyle='#9bf25a';g.lineWidth=5;g.strokeRect(4,4,w-8,hh-8);g.direction='rtl';g.textAlign='center';g.textBaseline='middle';g.fillStyle='#d9ffc4';let fs=70;do{g.font=`700 ${fs}px "Karantina","Heebo",Arial`;fs-=2;}while(g.measureText(RC.CLUE_MARK).width>w-60&&fs>36);g.fillText(RC.CLUE_MARK,w/2,hh/2+4);});
    markPlate=new THREE.Mesh(new THREE.CylinderGeometry(R,R,.0925,32,1,true,PI-tl/2,tl),new THREE.MeshStandardMaterial({map:t,roughness:.6,emissive:0xffffff,emissiveMap:t,emissiveIntensity:.22}));markPlate.position.y=h;vase.add(markPlate);markNoRay(markPlate);}
   // the physical check button, on the stage at the vase's foot
   const btnG=new THREE.Group();btnG.position.set(0,0,.55);vase.add(btnG);
@@ -2694,7 +2694,9 @@ const AZ=(()=>{
     function drawLock(st='idle'){const c=lockTex.userData.ctx,w=512,h=220;c.fillStyle='#0b0907';c.fillRect(0,0,w,h);c.strokeStyle={idle:'#c89b3c',bad:'#ff4040',ok:'#3dff7a'}[st];c.lineWidth=6;c.strokeRect(6,6,w-12,h-12);
       for(let i=0;i<3;i++){const x=w-90-i*165;c.fillStyle='#e9c77a';c.font='700 26px "Karantina","Heebo",Arial';c.direction='rtl';c.textAlign='center';c.fillText(`מטלה 0${i+1}`,x,50);c.strokeStyle='#5a4a34';c.lineWidth=4;c.strokeRect(x-60,70,120,110);c.fillStyle='#fff';c.font='900 64px "Arial Black",Arial';c.direction='ltr';c.fillText(A.chest.entry[i]||'',x,150);}
       lockTex.needsUpdate=true;}
-    function open(){A.chest.open=true;AUDIO.play('chest');drawLock('ok');tween(1.2,p=>{lidP.rotation.x=-easeOut(p)*1.6;},()=>{placeTok();extra.forEach(m=>m.visible=true);AUDIO.play('digit');setObjective();});}
+    function open(){A.chest.open=true;AUDIO.play('chest');drawLock('ok');tween(1.2,p=>{lidP.rotation.x=-easeOut(p)*1.6;},()=>{placeTok();extra.forEach(m=>m.visible=true);AUDIO.play('digit');setObjective();later(.35,autoTake);});}
+    /* 2026-10-18 (D-081): the tokens are collected by themselves when the chest opens; groups wandered off and missed them */
+    function autoTake(){if(!A.chest.open||A.chest.taken||A.where.token!=='home')return;if(state.mode==='play'&&!A.busy)pickup('token');else later(.3,autoTake);}
     function reset(){A.chest={open:false,entry:['','',''],taken:false};tokGlow.intensity=0;lidP.rotation.x=0;tok.outer.visible=false;A.where.token='hidden';extra.forEach(m=>m.visible=false);drawLock();}
     // D-051: the chest stays open; the tokens wait on it until they were taken
     function restore(c){if(!c.open)return;A.chest.open=true;A.chest.entry=[...AC.CHEST_CODE];lidP.rotation.x=-1.6;drawLock('ok');
@@ -2890,7 +2892,7 @@ const AZ=(()=>{
   {const ST=[[1,-15.0,-14.0],[2,-17.0,-17.6],[3,-13.6,-21.0]];updaters.push(()=>{if(zoneKey()!=='assign')return;for(const [n,x,z] of ST)if(Math.hypot(player.pos.x-x,player.pos.z-z)<2.0){A.active=n;break;}});}
   /* ---------- objective / reset / door ---------- */
   function solvedCount(){return[A.s1.solved,A.s2.solved,A.s3.solved].filter(Boolean).length;}
-  function objective(){if(A.chest.taken)return state.tokens>0?'<b>יש בידכם אסימונים.</b> מכונת הצעצועים מחכה.':'<b>האסימונים נוצלו.</b>';
+  function objective(){if(A.chest.taken)return state.tokens>0?'<b>יש בידכם אסימונים.</b> מכונת הצעצועים מחכה בחדר הראשון.':'<b>האסימונים נוצלו.</b>';
     if(A.chest.open)return'<b>ארגז הפרסים פתוח.</b> קחו את האסימונים.';const n=solvedCount();if(n===3)return'<b>שלוש העמדות פתורות.</b> נשאר ארגז הפרסים.';return`<b>${AC.ROOM_NAME}:</b> ${n} מתוך 3 עמדות.`;}
   function openDoor(){if(A.doorOpen)return;A.doorOpen=true;AUDIO.play('door');DOORA.collider.active=false;DOORA.open.active=true;DOORA.pivot.userData.interact=null;tween(1.6,p=>{DOORA.pivot.rotation.y=-easeInOut(p)*1.62;});applyZoneLights(zoneKey());}
   function useDoorKey(){
